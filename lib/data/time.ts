@@ -1,0 +1,152 @@
+export class CalendarDate {
+    year: number;
+    month: number;
+    day: number;
+
+    constructor(year: number, month: number, day: number) {
+        this.year = year;
+        this.month = month;
+        this.day = day;
+    }
+
+    static fromDateObject(date: Date): CalendarDate {
+        return new CalendarDate(
+            date.getFullYear(),
+            date.getMonth(),
+            date.getDate()
+        );
+    }
+
+    static fromISOString(str: string): CalendarDate {
+        if (str.includes("T")) {
+            str = str.split("T")[0];
+        }
+
+        const parts = str.split("-");
+
+        return new CalendarDate(
+            parseInt(parts[0]),
+            parseInt(parts[1]),
+            parseInt(parts[2])
+        );
+    }
+
+    toDateObject(): Date {
+        return new Date(this.year, this.month, this.day);
+    }
+
+    toISOString(): string {
+        return this.toDateObject().toISOString().split("T")[0]
+    }
+
+    compare(date: CalendarDate): -1 | 0 | 1 {
+        if (this.year < date.year) return -1;
+        if (this.year > date.year) return 1;
+      
+        if (this.month < date.month) return -1;
+        if (this.month > date.month) return 1;
+      
+        if (this.day < date.day) return -1;
+        if (this.day > date.day) return 1;
+      
+        return 0;
+    }
+
+    isSmallerThen(date: CalendarDate): boolean {
+        return this.compare(date) === -1;
+    }
+    
+    isBiggerThen(date: CalendarDate): boolean {
+        return this.compare(date) === 1;
+    }
+
+    isSmallerOrEqual(date: CalendarDate): boolean {
+        return this.compare(date) === -1 || this.compare(date) === 0;
+    }
+
+    isBiggerOrEqual(date: CalendarDate): boolean {
+        return this.compare(date) === 1 || this.compare(date) === 0;
+    }
+    
+    equals(date: CalendarDate): boolean {
+        return this.compare(date) === 0;
+    }
+}
+
+export class DayTime {
+    hour: number;
+    minute: number;
+
+    constructor(hour: number, minute: number) {
+        this.hour = hour;
+        this.minute = minute;
+    }
+
+    compare(time: DayTime): -1 | 0 | 1 {
+        if (this.hour < time.hour) return -1;
+        if (this.hour > time.hour) return 1;
+      
+        if (this.minute < time.minute) return -1;
+        if (this.minute > time.minute) return 1;
+      
+        return 0;
+    }
+
+    isSmallerThen(time: DayTime): boolean {
+        return this.compare(time) === -1;
+    }
+    
+    isBiggerThen(time: DayTime): boolean {
+        return this.compare(time) === 1;
+    }
+
+    isSmallerOrEqual(time: DayTime): boolean {
+        return this.compare(time) === -1 || this.compare(time) === 0;
+    }
+
+    isBiggerOrEqual(time: DayTime): boolean {
+        return this.compare(time) === 1 || this.compare(time) === 0;
+    }
+    
+    equals(time: DayTime): boolean {
+        return this.compare(time) === 0;
+    }
+}
+
+export class DateRange {
+    start: CalendarDate | null;
+    end: CalendarDate | null;
+
+    constructor(start: CalendarDate | null, end: CalendarDate | null) {
+        this.start = start;
+        this.end = end;
+    };
+
+    ensure(): {start: CalendarDate, end: CalendarDate} {
+        return {start: this.start ?? new CalendarDate(0, 0, 0), end: this.end || new CalendarDate(Infinity, Infinity, Infinity)};
+    }
+
+    isInRange(date: CalendarDate): boolean {
+        const range = this.ensure();
+        return range.start.isSmallerOrEqual(date) && range.end.isBiggerOrEqual(date);
+    }
+}
+
+export class TimeRange {
+    start: DayTime | null;
+    end: DayTime | null;
+
+    constructor(start: DayTime | null, end: DayTime | null) {
+        this.start = start;
+        this.end = end;
+    };
+
+    ensure(): {start: DayTime, end: DayTime} {
+        return {start: this.start ?? new DayTime(0, 0), end: this.end || new DayTime(Infinity, Infinity)};
+    }
+
+    isInRange(date: DayTime): boolean {
+        const range = this.ensure();
+        return range.start.isSmallerOrEqual(date) && range.end.isBiggerOrEqual(date);
+    }
+}

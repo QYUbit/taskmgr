@@ -6,7 +6,7 @@ export class DatabaseService {
   private static instance: DatabaseService;
   private db!: SQLite.SQLiteDatabase;
   private isInitialized = false;
-  private readonly LATEST_VERSION = 3;
+  private readonly LATEST_VERSION = 1;
 
   private constructor() {}
 
@@ -40,7 +40,7 @@ export class DatabaseService {
 
     if (currentVersion !== this.LATEST_VERSION) {
       console.warn(
-        `DB-Version ${currentVersion} erreicht, aber LATEST_VERSION ist ${this.LATEST_VERSION}. Migration fehlt?`
+        `DB-Version is ${currentVersion}, but LATEST_VERSION is ${this.LATEST_VERSION}. Missing migration?`
       );
     }
   }

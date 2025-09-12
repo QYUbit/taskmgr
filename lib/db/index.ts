@@ -223,7 +223,7 @@ export class DatabaseService {
     const cutoffString = cutoffDate.toISOString().split('T')[0];
 
     this.db.runAsync(
-      `DELETE FROM events WHERE date(dateRangeEnd) < date(?)`,
+      `DELETE FROM events WHERE date(date) < date(?)`,
       [cutoffString],
     );
   }

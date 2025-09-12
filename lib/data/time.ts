@@ -17,7 +17,7 @@ export class CalendarDate {
         );
     }
 
-    static fromISOString(str: string): CalendarDate {
+    static fromString(str: string): CalendarDate {
         if (str.includes("T")) {
             str = str.split("T")[0];
         }
@@ -35,7 +35,7 @@ export class CalendarDate {
         return new Date(this.year, this.month, this.day);
     }
 
-    toISOString(): string {
+    toString(): string {
         return this.toDateObject().toISOString().split("T")[0]
     }
 
@@ -80,6 +80,15 @@ export class DayTime {
     constructor(hour: number, minute: number) {
         this.hour = hour;
         this.minute = minute;
+    }
+
+    static fromString(str: string): DayTime {
+        const [hours, minutes] = str.split(":")
+        return new DayTime(parseInt(hours), parseInt(minutes))
+    }
+
+    toString(): string {
+        return `${String(this.hour).padStart(2, '0')}:${String(this.minute).padStart(2, '0')}`
     }
 
     compare(time: DayTime): -1 | 0 | 1 {

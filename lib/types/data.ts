@@ -20,7 +20,7 @@ export interface Event {
     description: string
     date: CalendarDate
     duration: TimeRange
-    sourceType: ""
+    sourceType: "manual" | "generated" | "template"
     todoId?: string
     isDismissed: boolean
     completedAt?: string

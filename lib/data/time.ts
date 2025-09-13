@@ -131,6 +131,13 @@ export class DateRange {
         this.end = end;
     };
 
+    static fromString(startStr: string | null, endStr: string | null): DateRange {
+        return new DateRange(
+            startStr ? CalendarDate.fromString(startStr) : null,
+            endStr ? CalendarDate.fromString(endStr) : null,
+        )
+    }
+
     ensure(): {start: CalendarDate, end: CalendarDate} {
         return {start: this.start ?? new CalendarDate(0, 0, 0), end: this.end || new CalendarDate(Infinity, Infinity, Infinity)};
     }
@@ -149,6 +156,13 @@ export class TimeRange {
         this.start = start;
         this.end = end;
     };
+
+    static fromString(startStr: string | null, endStr: string | null): TimeRange {
+        return new TimeRange(
+            startStr ? DayTime.fromString(startStr) : null,
+            endStr ? DayTime.fromString(endStr) : null,
+        )
+    }
 
     ensure(): {start: DayTime, end: DayTime} {
         return {start: this.start ?? new DayTime(0, 0), end: this.end || new DayTime(Infinity, Infinity)};

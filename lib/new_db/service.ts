@@ -1,6 +1,6 @@
 import * as SQLite from 'expo-sqlite';
-import { CalendarDate, DateRange, DayTime, TimeRange } from '../data/time';
-import { DateConstraint, isTodoRepeating } from '../data/todo';
+import { CalendarDate, DateRange, TimeRange } from '../data/time';
+import { isTodoRepeating } from '../data/todo';
 import { Event, NewEvent, NewTodo, Todo } from '../types/data';
 import { migrations } from './migrations';
 
@@ -47,15 +47,18 @@ export class DBService {
     }
   }
 
-  // TODOs
+  // =============================================
+  // TODOS
+  // =============================================
+
   async createTodo(data: NewTodo): Promise<string> {
     await this.init();
     const id = this.generateId();
     const now = new Date().toISOString();
 
     await this.db.runAsync(
-      `INSERT INTO todos (id, title, description, isRepeating, repeatOn, isTemplate, dateStart, dateEnd timeStart, timeEnd, createdAt, updatedAt)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      `INSERT INTO todos (id, title, description, isRepeating, repeatOn, isTemplate, dateStart, dateEnd, timeStart, timeEnd, createdAt, updatedAt)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         id,
         data.title,
@@ -71,54 +74,85 @@ export class DBService {
         now
       ]
     );
+
     return id;
   }
 
   async getAllTodos(): Promise<Todo[]> {
     await this.init();
     const rows = await this.db.getAllAsync('SELECT * FROM todos ORDER BY createdAt DESC', []);
-    
-    return rows.map((row: any) => {
-      const dateConstraint = (row.dateConstraint as DateConstraint)
+    return rows.map((row: any) => this.mapRowToTodo(row));
+  }
 
-      return {
-        id: row.id,
-        title: row.title,
-        description: row.description,
-        isRepeating: row.isRepeating === 1,
-        repeatOn: JSON.parse(row.repeatOn || '[]'),
-        duration: new TimeRange(DayTime.fromString(row.timeStart), DayTime.fromString(row.timeEnd)),
-        dateRange: dateConstraint.type === "frame"
-          ? new DateRange(
-            dateConstraint.frame && dateConstraint.frame[0] ? CalendarDate.fromString(dateConstraint.frame[0]) : null,
-            dateConstraint.frame && dateConstraint.frame[1] ? CalendarDate.fromString(dateConstraint.frame[1]) : null
-          ) : undefined,
-        isTemplate: row.isTemplate,
-        createdAt: row.createdAt,
-        updatedAt: row.updatedAt
-      }
-    });
+  async getTodoById(id: string): Promise<Todo | null> {
+    await this.init();
+    const row = await this.db.getFirstAsync('SELECT * FROM todos WHERE id = ?', [id]);
+    return row ? this.mapRowToTodo(row) : null;
+  }
+
+  private mapRowToTodo(row: any): Todo {
+    return {
+      id: row.id,
+      title: row.title,
+      description: row.description,
+      repeatOn: JSON.parse(row.repeatOn || '[]'),
+      duration: TimeRange.fromString(row.timeStart, row.timeEnd),
+      dateRange: DateRange.fromString(row.dateStart, row.dateEnd),
+      isTemplate: row.isTemplate,
+      createdAt: row.createdAt,
+      updatedAt: row.updatedAt
+    }
   }
 
   async updateTodo(id: string, updates: Partial<Todo>): Promise<void> {
     await this.init();
+
     const now = new Date().toISOString();
     const fields: string[] = [];
     const values: any[] = [];
-    Object.entries(updates).forEach(([k, v]) => {
-      if (k === 'repeatOn' || k === 'timeConstraint') {
-        fields.push(`${k} = ?`);
-        values.push(JSON.stringify(v));
-      } else if (typeof v === 'boolean') {
-        fields.push(`${k} = ?`);
-        values.push(v ? 1 : 0);
-      } else if (!['id', 'createdAt', 'updatedAt'].includes(k)) {
-        fields.push(`${k} = ?`);
-        values.push(v);
+
+    Object.entries(updates).forEach(([key, value]) => {
+      switch (key) {
+        case 'isTemplate':
+          fields.push('isTemplate = ?');
+          values.push(value ? 1 : 0);
+          break;
+        case 'dateRange':
+          fields.push('dateRangeStart = ?', 'dateRangeEnd = ?');
+          const range = value as DateRange;
+          values.push(
+            range?.start?.toString() ?? null,
+            range?.end?.toString() ?? null
+          );
+          break;
+        case 'duration':
+          fields.push('timeStart = ?', 'timeEnd = ?');
+          const duration = value as TimeRange;
+          values.push(
+            duration?.start?.toString() ?? null,
+            duration?.end?.toString() ?? null
+          );
+          break;
+        case 'isRepeating':
+          fields.push('isRepeating = ?');
+          values.push(value ? 1 : 0);
+          break;
+        case 'repeatOn':
+          fields.push('repeatOn = ?');
+          values.push(JSON.stringify(value));
+          break;
+        default:
+          if (['title', 'description'].includes(key)) {
+            fields.push(`${key} = ?`);
+            values.push(value);
+          }
       }
     });
-    const sql = `UPDATE todos SET ${fields.join(', ')}, updatedAt = ? WHERE id = ?`;
-    await this.db.runAsync(sql, [...values, now, id]);
+
+    if (fields.length > 0) {
+      const sql = `UPDATE todos SET ${fields.join(', ')}, updatedAt = ? WHERE id = ?`;
+      await this.db.runAsync(sql, [...values, now, id]);
+    }
   }
 
   async deleteTodo(id: string): Promise<void> {
@@ -126,7 +160,10 @@ export class DBService {
     await this.db.runAsync('DELETE FROM todos WHERE id = ?', [id]);
   }
 
+  // =============================================
   // Events
+  // =============================================
+
   async createEvent(data: NewEvent): Promise<string> {
     await this.init();
     const id = this.generateId();
@@ -143,58 +180,81 @@ export class DBService {
         data.duration.start?.toString() ?? null,
         data.duration.end?.toString() ?? null,
         data.sourceType,
-        data.todoId || null,
+        data.todoId ?? null,
         data.isDismissed,
-        data.completedAt || null,
+        data.completedAt ?? null,
         now,
         now
       ]
     );
+
     return id;
   }
 
   async getEventsForDate(dateString: string): Promise<Event[]> {
     await this.init();
+
     const rows = await this.db.getAllAsync(
       `SELECT * FROM events WHERE date(?) ORDER BY timeStart`,
       [dateString]
     );
     
-    return rows.map((row: any) => ({
+    return rows.map((row: any) => this.mapRowToEvent(row));
+  }
+
+  private mapRowToEvent(row: any): Event {
+    return {
       id: row.id,
       title: row.title,
       description: row.description,
       date: CalendarDate.fromString(row.date),
-      duration: new TimeRange(DayTime.fromString(row.timeStart), DayTime.fromString(row.timeStart)),
+      duration: TimeRange.fromString(row.timeStart, row.timeEnd),
       sourceType: row.sourceType,
       todoId: row.sourceTodoId,
       isDismissed: row.isDismissed,
       completedAt: row.completedAt,
       createdAt: row.createdAt,
       updatedAt: row.updatedAt
-    }));
+    }
   }
 
   async updateEvent(id: string, updates: Partial<Event>): Promise<void> {
     await this.init();
+
     const now = new Date().toISOString();
     const fields: string[] = [];
     const values: any[] = [];
 
-    Object.entries(updates).forEach(([k, v]) => {
-      if (k === 'date') {
-        fields.push('date = ?');
-        values.push((v as any).date.toString());
-      } else if (k === 'duration') {
-        fields.push('timeStart = ?', 'timeEnd = ?');
-        values.push((v as any).duration.start?.toString() ?? null, (v as any).duration.end?.toString() ?? null);
-      } else if (!['id', 'createdAt', 'updatedAt'].includes(k)) {
-        fields.push(`${k} = ?`);
-        values.push(v);
+     Object.entries(updates).forEach(([key, value]) => {
+      switch (key) {
+        case 'date':
+          fields.push('date = ?');
+          values.push((value as CalendarDate).toString());
+          break;
+        case 'duration':
+          fields.push('timeStart = ?', 'timeEnd = ?');
+          const duration = value as TimeRange;
+          values.push(
+            duration?.start?.toString() ?? null,
+            duration?.end?.toString() ?? null
+          );
+          break;
+        case 'isDismissed':
+          fields.push('isDismissed = ?');
+          values.push(value ? 1 : 0);
+          break;
+        default:
+          if (['title', 'description', 'sourceType', 'todoId', 'completedAt'].includes(key)) {
+            fields.push(`${key} = ?`);
+            values.push(value);
+          }
       }
     });
-    const sql = `UPDATE events SET ${fields.join(', ')}, updatedAt = ? WHERE id = ?`;
-    await this.db.runAsync(sql, [...values, now, id]);
+
+    if (fields.length > 0) {
+      const sql = `UPDATE events SET ${fields.join(', ')}, updatedAt = ? WHERE id = ?`;
+      await this.db.runAsync(sql, [...values, now, id]);
+    }
   }
 
   async deleteEvent(id: string): Promise<void> {

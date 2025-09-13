@@ -5,7 +5,7 @@ export interface Todo {
     title: string
     description: string
     repeatOn: number[]
-    singleDate?: CalendarDate
+    isTemplate: boolean
     dateRange?: DateRange
     duration: TimeRange
     createdAt: string

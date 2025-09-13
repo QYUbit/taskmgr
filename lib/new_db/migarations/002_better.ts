@@ -11,8 +11,7 @@ export const migration_002_better: Migration = {
                 description TEXT NOT NULL DEFAULT '',
                 isRepeating INTEGER DEFAULT 0,
                 repeatOn TEXT,
-                isSingleDay INTEGER DEFAULT 0
-                singleDay TEXT
+                isTemplate INTEGER DEFAULT 0
                 dateStart TEXT,
                 dateEnd TEXT,
                 timeStart TEXT NOT NULL,

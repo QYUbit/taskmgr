@@ -1,6 +1,6 @@
 import * as SQLite from 'expo-sqlite';
 import { CalendarDate, DateRange, DayTime, TimeRange } from '../data/time';
-import { DateConstraint, getTodoDateConstraint, isTodoRepeating } from '../data/todo';
+import { DateConstraint, isTodoRepeating } from '../data/todo';
 import { Event, NewEvent, NewTodo, Todo } from '../types/data';
 import { migrations } from './migrations';
 
@@ -54,7 +54,7 @@ export class DBService {
     const now = new Date().toISOString();
 
     await this.db.runAsync(
-      `INSERT INTO todos (id, title, description, isRepeating, repeatOn, dateConstraint, timeStart, timeEnd, createdAt, updatedAt)
+      `INSERT INTO todos (id, title, description, isRepeating, repeatOn, isTemplate, dateStart, dateEnd timeStart, timeEnd, createdAt, updatedAt)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         id,
@@ -62,7 +62,9 @@ export class DBService {
         data.description,
         isTodoRepeating(data) ? 1 : 0,
         JSON.stringify(data.repeatOn),
-        JSON.stringify(getTodoDateConstraint(data)),
+        data.isTemplate,
+        data.duration.start?.toString() ?? null,
+        data.duration.end?.toString() ?? null,
         data.duration.start?.toString() ?? null,
         data.duration.end?.toString() ?? null,
         now,
@@ -91,7 +93,7 @@ export class DBService {
             dateConstraint.frame && dateConstraint.frame[0] ? CalendarDate.fromString(dateConstraint.frame[0]) : null,
             dateConstraint.frame && dateConstraint.frame[1] ? CalendarDate.fromString(dateConstraint.frame[1]) : null
           ) : undefined,
-        singleDate: dateConstraint.type === "single"? dateConstraint.single ? CalendarDate.fromString(dateConstraint.single) : undefined : undefined,
+        isTemplate: row.isTemplate,
         createdAt: row.createdAt,
         updatedAt: row.updatedAt
       }

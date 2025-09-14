@@ -66,8 +66,8 @@ export class DBService {
         isTodoRepeating(data) ? 1 : 0,
         JSON.stringify(data.repeatOn),
         data.isTemplate,
-        data.duration.start?.toString() ?? null,
-        data.duration.end?.toString() ?? null,
+        data.dateRange?.start?.toString() ?? null,
+        data.dateRange?.end?.toString() ?? null,
         data.duration.start?.toString() ?? null,
         data.duration.end?.toString() ?? null,
         now,
@@ -118,7 +118,7 @@ export class DBService {
           values.push(value ? 1 : 0);
           break;
         case 'dateRange':
-          fields.push('dateRangeStart = ?', 'dateRangeEnd = ?');
+          fields.push('dateStart = ?', 'dateEnd = ?');
           const range = value as DateRange;
           values.push(
             range?.start?.toString() ?? null,
@@ -195,7 +195,7 @@ export class DBService {
     await this.init();
 
     const rows = await this.db.getAllAsync(
-      `SELECT * FROM events WHERE date(?) ORDER BY timeStart`,
+      `SELECT * FROM events WHERE date = ? ORDER BY timeStart`,
       [dateString]
     );
     
@@ -210,7 +210,7 @@ export class DBService {
       date: CalendarDate.fromString(row.date),
       duration: TimeRange.fromString(row.timeStart, row.timeEnd),
       sourceType: row.sourceType,
-      todoId: row.sourceTodoId,
+      todoId: row.todoId,
       isDismissed: row.isDismissed,
       completedAt: row.completedAt,
       createdAt: row.createdAt,

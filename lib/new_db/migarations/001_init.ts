@@ -34,11 +34,11 @@ export const migration_001_init: Migration = {
                 timeStart TEXT NOT NULL,                -- HH:MM
                 timeEnd TEXT NOT NULL,                  -- HH:MM
                 sourceType TEXT NOT NULL,               -- manual or generated or template
-                FOREIGN KEY (todoId) REFERENCES todos (id) ON DELETE CASCADE
-                isDismissed INTERGER NOT NULL DEFAULT 0
+                isDismissed INTEGER NOT NULL DEFAULT 0
                 completedAt TEXT DEFAULT '',            -- ISO
                 createdAt TEXT NOT NULL,                -- ISO
                 updatedAt TEXT NOT NULL                 -- ISO
+                FOREIGN KEY (todoId) REFERENCES todos (id) ON DELETE CASCADE,
             );
 
                 CREATE TABLE IF NOT EXISTS notifications (

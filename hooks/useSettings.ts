@@ -11,6 +11,7 @@ interface AppSettings {
   notificationsEnabled: boolean;
   defaultNotificationMinutes: number;
   showGhostEvents: boolean;
+  showCurrentTime: boolean;
 }
 
 const DEFAULT_SETTINGS: AppSettings = {
@@ -22,7 +23,8 @@ const DEFAULT_SETTINGS: AppSettings = {
   weekStartsOn: 1,
   notificationsEnabled: true,
   defaultNotificationMinutes: 15,
-  showGhostEvents: true
+  showGhostEvents: true,
+  showCurrentTime: true
 };
 
 export const useSettings = () => {

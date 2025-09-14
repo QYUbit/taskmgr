@@ -1,17 +1,20 @@
-import { useCallback, useEffect, useState } from 'react';
-import { dbService } from '../lib/db/index';
-import { Event } from '../lib/db/types';
+import { CalendarDate } from "@/lib/data/time";
+import { dbService } from "@/lib/db/service";
+import { Event, NewEvent } from "@/lib/types/data";
+import { useCallback, useEffect, useState } from "react";
 
-export const useEventsForDate = (dateString: string) => {
+export const useEventsForDate = (date: CalendarDate) => {
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const dateString = date.toString()
 
   const loadEvents = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
-      const eventsData = await dbService.getEventsForDate(dateString);
+      const eventsData = await dbService.getEventsForDate(date.toString());
       setEvents(eventsData);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load events');
@@ -37,7 +40,7 @@ export const useEventOperations = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const createEvent = async (eventData: Omit<Event, 'id' | 'createdAt' | 'updatedAt'>) => {
+  const createEvent = async (eventData: NewEvent) => {
     try {
       setLoading(true);
       setError(null);

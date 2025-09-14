@@ -1,5 +1,4 @@
-import { useState } from 'react';
-import { dbService } from '../lib/db/index';
+/*import { useState } from 'react';
 
 export const useMaintenanceOperations = () => {
   const [loading, setLoading] = useState(false);
@@ -51,4 +50,4 @@ export const useMaintenanceOperations = () => {
     loading,
     error
   };
-};
+};*/

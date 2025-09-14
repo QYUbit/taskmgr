@@ -1,6 +1,6 @@
+import { dbService } from '@/lib/db/service';
+import { NewTodo, Todo } from '@/lib/types/data';
 import { useCallback, useEffect, useState } from 'react';
-import { dbService } from '../lib/db/index';
-import { Todo } from '../lib/db/types';
 
 export const useTodos = () => {
   const [todos, setTodos] = useState<Todo[]>([]);
@@ -37,7 +37,7 @@ export const useTodoOperations = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const createTodo = async (todoData: Omit<Todo, 'id' | 'createdAt' | 'updatedAt'>) => {
+  const createTodo = async (todoData: NewTodo) => {
     try {
       setLoading(true);
       setError(null);

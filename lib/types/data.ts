@@ -14,12 +14,15 @@ export interface Todo {
 
 export type NewTodo = Omit<Todo, 'id' | 'createdAt' | 'updatedAt'>
 
-export interface Event {
+export interface BaseEvent {
     id: string
     title: string
     description: string
-    date: CalendarDate
     duration: TimeRange
+}
+
+export interface Event extends BaseEvent {
+    date: CalendarDate
     sourceType: "manual" | "generated" | "template"
     todoId?: string
     isDismissed: boolean
@@ -29,6 +32,10 @@ export interface Event {
 }
 
 export type NewEvent = Omit<Event, 'id' | 'createdAt' | 'updatedAt'>
+
+export interface GhostEvent extends BaseEvent {
+    todoId?: string // Should exist
+}
 
 export interface Notification {
     id: string;

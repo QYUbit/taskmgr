@@ -1,6 +1,5 @@
 import * as SQLite from 'expo-sqlite';
 import { CalendarDate, DateRange, TimeRange } from '../data/time';
-import { isTodoRepeating } from '../data/todo';
 import { Event, NewEvent, NewTodo, Todo } from '../types/data';
 import { migrations } from './migrations';
 
@@ -58,13 +57,12 @@ export class DBService {
     const now = new Date().toISOString();
 
     await this.db.runAsync(
-      `INSERT INTO todos (id, title, description, isRepeating, repeatOn, isTemplate, dateStart, dateEnd, timeStart, timeEnd, createdAt, updatedAt)
+      `INSERT INTO todos (id, title, description, repeatOn, isTemplate, dateStart, dateEnd, timeStart, timeEnd, createdAt, updatedAt)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         id,
         data.title,
         data.description,
-        isTodoRepeating(data) ? 1 : 0,
         JSON.stringify(data.repeatOn),
         data.isTemplate,
         data.dateRange?.start?.toString() ?? null,
@@ -133,10 +131,6 @@ export class DBService {
             duration?.start?.toString() ?? null,
             duration?.end?.toString() ?? null
           );
-          break;
-        case 'isRepeating':
-          fields.push('isRepeating = ?');
-          values.push(value ? 1 : 0);
           break;
         case 'repeatOn':
           fields.push('repeatOn = ?');

@@ -91,6 +91,14 @@ export class DayTime {
         return `${String(this.hour).padStart(2, '0')}:${String(this.minute).padStart(2, '0')}`
     }
 
+    toMinutes(): number {
+        return this.hour * 60 + this.minute
+    }
+
+    isValid(): boolean {
+        return (this.minute >= 0 && this.minute <= 59 && this.hour >= 0 && this.hour <= 23) || this.hour === 24 && this.minute === 0
+    }
+
     compare(time: DayTime): -1 | 0 | 1 {
         if (this.hour < time.hour) return -1;
         if (this.hour > time.hour) return 1;
@@ -149,27 +157,23 @@ export class DateRange {
 }
 
 export class TimeRange {
-    start: DayTime | null;
-    end: DayTime | null;
+    start: DayTime;
+    end: DayTime;
 
-    constructor(start: DayTime | null, end: DayTime | null) {
+    constructor(start: DayTime, end: DayTime) {
         this.start = start;
         this.end = end;
     };
 
-    static fromString(startStr: string | null, endStr: string | null): TimeRange {
-        return new TimeRange(
-            startStr ? DayTime.fromString(startStr) : null,
-            endStr ? DayTime.fromString(endStr) : null,
-        )
-    }
-
-    ensure(): {start: DayTime, end: DayTime} {
-        return {start: this.start ?? new DayTime(0, 0), end: this.end || new DayTime(Infinity, Infinity)};
+    static fromString(startStr: string, endStr: string): TimeRange {
+        return new TimeRange(DayTime.fromString(startStr), DayTime.fromString(endStr),)
     }
 
     isInRange(date: DayTime): boolean {
-        const range = this.ensure();
-        return range.start.isSmallerOrEqual(date) && range.end.isBiggerOrEqual(date);
+        return this.start.isSmallerOrEqual(date) && this.end.isBiggerOrEqual(date);
+    }
+
+    areOverlapping(range: TimeRange): boolean {
+        return this.start.isSmallerThen(range.end) && this.end.isBiggerThen(range.start);
     }
 }

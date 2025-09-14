@@ -1,4 +1,4 @@
-import { dbService } from '../db/index';
+import { dbService } from '../old_db/index';
 
 export class BackgroundTaskManager {
   private static instance: BackgroundTaskManager;

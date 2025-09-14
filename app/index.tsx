@@ -1,15 +1,13 @@
-import { Text, View } from "react-native";
+import DayView from '@/components/timeline/DayView';
+import { TimelineItem } from '@/lib/types/ui';
+import React from 'react';
 
-export default function IndexScreen() {
+export default function DayScreen() {
+  const handleEventPress = (event: TimelineItem): void => {
+    console.log('Event pressed:', event.title);
+  };
+  
   return (
-    <View
-      style={{
-        flex: 1,
-        justifyContent: "center",
-        alignItems: "center",
-      }}
-    >
-      <Text>Edit app/index.tsx to edit this screen.</Text>
-    </View>
+    <DayView onEventPress={handleEventPress} />
   );
 }

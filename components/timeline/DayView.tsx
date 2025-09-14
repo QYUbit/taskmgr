@@ -1,80 +1,49 @@
+import { useSettings } from "@/hooks/useSettings";
 import { useTheme } from "@/hooks/useTheme";
+import { useTimeline } from "@/hooks/useTimeline";
+import { CalendarDate } from "@/lib/data/time";
+import { TimelineItem } from "@/lib/types/ui";
+import { useFocusEffect } from "expo-router";
+import { useCallback, useRef } from "react";
 import { SafeAreaView, ScrollView, StyleSheet, Text, View, ViewStyle } from "react-native";
 import EventCard from "./EventCard";
 import TimeColumn from "./TimeColumn";
 import TimeIndicator from "./TimeIndicator";
 
-interface Event {
-  id: number;
-  title: string;
-  startTime: number;
-  endTime: number;
-  color?: string;
-}
-
-interface ProcessedEvent extends Event {
-  width: string;
-  left: string;
-}
-
 interface DayViewProps {
-  date?: Date;
-  events?: Event[];
-  onEventPress?: (event: ProcessedEvent) => void;
-  showCurrentTime?: boolean;
+  date?: CalendarDate;
+  onEventPress?: (event: TimelineItem) => void;
 }
 
-export default function DayView({ 
-  date = new Date(), 
-  events = [], 
-  onEventPress,
-  showCurrentTime = true 
-}: DayViewProps) {
+export default function DayView({ date = CalendarDate.fromDateObject(new Date()), onEventPress}: DayViewProps) {
   const theme = useTheme();
+  const { settings } = useSettings();
+  const { timelineItems } = useTimeline(date);
+
+  const scrollViewRef = useRef<ScrollView | null>(null)
   
   const getCurrentTimePosition = (): number => {
     const now = new Date();
     const currentMinutes = now.getHours() * 60 + now.getMinutes();
     return (currentMinutes / (24 * 60)) * (24 * 60);
   };
-  
-  const sortedEvents: Event[] = events
-    .filter((event: Event) => event.startTime >= 0 && event.endTime <= 24 * 60)
-    .sort((a: Event, b: Event) => a.startTime - b.startTime);
-  
-  const processEvents = (events: Event[]): ProcessedEvent[] => {
-    const processedEvents: ProcessedEvent[] = [];
-    
-    events.forEach((event: Event, index: number) => {
-      const overlapping = events.filter((otherEvent: Event, otherIndex: number) => 
-        otherIndex !== index &&
-        ((event.startTime >= otherEvent.startTime && event.startTime < otherEvent.endTime) ||
-         (event.endTime > otherEvent.startTime && event.endTime <= otherEvent.endTime) ||
-         (event.startTime <= otherEvent.startTime && event.endTime >= otherEvent.endTime))
-      );
-      
-      processedEvents.push({
-        ...event,
-        width: overlapping.length > 0 ? `${100 / (overlapping.length + 1)}%` : '95%',
-        left: overlapping.length > 0 ? `${(overlapping.filter(e => e.startTime <= event.startTime).length * 100) / (overlapping.length + 1)}%` : '2.5%'
-      });
-    });
-    
-    return processedEvents;
-  };
-  
-  const processedEvents: ProcessedEvent[] = processEvents(sortedEvents);
+
+  useFocusEffect(
+    useCallback(() => {
+      scrollViewRef.current?.scrollTo({ y: getCurrentTimePosition() })
+    }, [])
+  )
   
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
       <View style={[styles.header, { backgroundColor: theme.surface, borderBottomColor: theme.border }]}>
         <View style={styles.headerContent}>
           <Text style={[styles.dateText, { color: theme.text }]}>
-            {date.toLocaleDateString('de-DE', { 
+            {date.toDateObject().toLocaleDateString('en-US', { 
               weekday: 'long', 
               year: 'numeric', 
               month: 'long', 
-              day: 'numeric' 
+              day: 'numeric'
             })}
           </Text>
         </View>
@@ -84,18 +53,19 @@ export default function DayView({
         style={styles.scrollView}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
+        ref={scrollViewRef}
       >
         <View style={styles.dayContainer}>
           <TimeColumn theme={theme} />
           
           <View style={styles.eventsContainer}>
-            {processedEvents.map((event: ProcessedEvent, index: number) => (
+            {timelineItems.map((event, index) => (
               <View
                 key={`${event.id}-${index}`}
                 style={[
                   styles.eventContainer,
                   {
-                    top: (event.startTime / (24 * 60)) * (24 * 60),
+                    top: (event.duration.start.toMinutes() / (24 * 60)) * (24 * 60),
                     width: event.width,
                     left: event.left,
                   } as ViewStyle
@@ -109,7 +79,7 @@ export default function DayView({
               </View>
             ))}
             
-            {showCurrentTime && (
+            {settings.showCurrentTime && (
               <TimeIndicator
                 time={getCurrentTimePosition()}
                 theme={theme}
@@ -128,7 +98,7 @@ const styles = StyleSheet.create({
   },
   header: {
     borderBottomWidth: 1,
-    paddingTop: 32,
+    paddingTop: 35,
     paddingBottom: 16,
     paddingHorizontal: 20,
   },

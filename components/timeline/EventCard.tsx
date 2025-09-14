@@ -1,34 +1,23 @@
 import { Colors } from "@/constants/colors";
+import { TimelineItem } from "@/lib/types/ui";
 import { StyleSheet, Text, TouchableOpacity } from "react-native";
 
-interface Event {
-  id: number;
-  title: string;
-  startTime: number;
-  endTime: number;
-  color?: string;
-}
-
-interface ProcessedEvent extends Event {
-  width: string;
-  left: string;
-}
-
 interface EventCardProps {
-  event: ProcessedEvent;
+  event: TimelineItem;
   theme: Colors;
-  onPress?: (event: ProcessedEvent) => void;
+  onPress?: (event: TimelineItem) => void;
 }
 
 export default function EventCard({ event, theme, onPress }: EventCardProps) {
-  const eventHeight = Math.max(((event.endTime - event.startTime) / 60) * 60, 30); // Min 30px height
-  
+  const eventHeight = Math.max((event.duration.end.toMinutes() - event.duration.start.toMinutes()), 30);
+
   return (
     <TouchableOpacity
       style={[
         styles.event,
         {
-          backgroundColor: event.color || theme.eventBackground,
+          backgroundColor: /*event.color ||*/ theme.eventBackground,
+          opacity: event.isGhost ? 0.4 : 1,
           height: eventHeight,
         }
       ]}
@@ -39,16 +28,10 @@ export default function EventCard({ event, theme, onPress }: EventCardProps) {
         {event.title}
       </Text>
       <Text style={[styles.eventTime, { color: theme.eventText, opacity: 0.8 }]}>
-        {formatTime(event.startTime)} - {formatTime(event.endTime)}
+        {event.duration.start.toString()} - {event.duration.end.toString()}
       </Text>
     </TouchableOpacity>
   );
-};
-
-const formatTime = (minutes: number): string => {
-  const hours = Math.floor(minutes / 60);
-  const mins = minutes % 60;
-  return `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}`;
 };
 
 const styles = StyleSheet.create({

@@ -1,44 +1,44 @@
-import { useCallback, useEffect, useState } from 'react';
-import { Event, GhostEvent } from '../lib/db/types';
+import { CalendarDate } from '@/lib/data/time';
+import { TimelineItem } from '@/lib/types/ui';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useEventsForDate } from './useEvents';
 import { useGhostEventsForDate } from './useGhostEvents';
 
-export type TimelineItem = Event | GhostEvent;
-
-export const useTimeline = (dateString: string) => {
-  const { events, loading: eventsLoading, error: eventsError, refetch: refetchEvents } = useEventsForDate(dateString);
-  const { ghostEvents, loading: ghostLoading, error: ghostError, refetch: refetchGhosts } = useGhostEventsForDate(dateString);
+export function useTimeline(date: CalendarDate) {
+  const { events, loading: eventsLoading, error: eventsError, refetch: refetchEvents } = useEventsForDate(date);
+  const { ghostEvents, loading: ghostLoading, error: ghostError, refetch: refetchGhosts } = useGhostEventsForDate(date);
 
   const [timelineItems, setTimelineItems] = useState<TimelineItem[]>([]);
   const loading = eventsLoading || ghostLoading;
   const error = eventsError || ghostError;
 
-  // Kombiniere Events und Ghost Events
-  useEffect(() => {
-    const combined: TimelineItem[] = [...events, ...ghostEvents];
-    
-    // Sortiere nach Startzeit
-    combined.sort((a, b) => {
-      const timeA = new Date(a.timeRange.startTime);
-      const timeB = new Date(b.timeRange.startTime);
-      
-      if (timeA.getHours() > timeB.getHours()) {
-        return -1
-      }
-      if (timeB.getHours() > timeB.getHours()) {
-        return -1
-      }
-      if (timeA.getMinutes() > timeB.getMinutes()) {
-        return 1
-      }
-      if (timeB.getMinutes() > timeB.getMinutes()) {
-        return 1
-      }
-      return 0;
-    });
+  const filteredGhostEvents = useMemo(() => {
+    return ghostEvents.filter((event) => {
+      return !events.some(item => item.todoId === event.todoId)
+    })
+  }, [ghostEvents])
 
-    setTimelineItems(combined);
-  }, [events, ghostEvents]);
+  useEffect(() => {
+    const combined = [...events, ...filteredGhostEvents]
+    const sorted = combined.sort((a, b) => a.duration.start.compare(b.duration.start))
+
+    console.log(`Before: ${ghostEvents.length}, After: ${filteredGhostEvents.length}`)
+
+    const processed = sorted.map((item, index) => {
+      const overlapping = sorted.filter((otherEvent, otherIndex) => {
+        return otherIndex !== index && item.duration.areOverlapping(otherEvent.duration)
+      });
+
+      return {
+        ...item,
+        width: overlapping.length > 0 ? `${100 / (overlapping.length + 1)}%` : '95%',
+        left: overlapping.length > 0 ? `${Math.max((overlapping.filter(i => i.duration.start.isSmallerOrEqual(item.duration.start)).length * 100) / (overlapping.length + 1), 2.5)}%` : '2.5%',
+        isGhost: !("date" in item)
+      };
+    })
+
+    setTimelineItems(processed)
+  }, [events, ghostEvents])
 
   const refetch = useCallback(async () => {
     await Promise.all([refetchEvents(), refetchGhosts()]);
@@ -52,4 +52,4 @@ export const useTimeline = (dateString: string) => {
     error,
     refetch
   };
-};
+}

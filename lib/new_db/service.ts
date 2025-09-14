@@ -8,7 +8,7 @@ export class DBService {
   private static instance: DBService;
   private db!: SQLite.SQLiteDatabase;
   private isInitialized = false;
-  private readonly LATEST_VERSION = 2;
+  private readonly LATEST_VERSION = 1;
 
   private constructor() {}
 
@@ -31,6 +31,7 @@ export class DBService {
   private async runMigrations(): Promise<void> {
     const row = await this.db.getFirstAsync<{ user_version: number }>('PRAGMA user_version');
     let currentVersion = row?.user_version ?? 0;
+    currentVersion = 0
 
     for (const migration of migrations) {
       if (currentVersion < migration.toVersion) {
@@ -191,6 +192,12 @@ export class DBService {
     return id;
   }
 
+  async getAllEvents(): Promise<Event[]> {
+    await this.init();
+    const rows = await this.db.getAllAsync('SELECT * FROM events ORDER BY date DESC', []);
+    return rows.map((row: any) => this.mapRowToEvent(row));
+  }
+
   async getEventsForDate(dateString: string): Promise<Event[]> {
     await this.init();
 
@@ -280,7 +287,7 @@ export class DBService {
   }
 
   generateId() {
-    return crypto.randomUUID()
+    return Date.now().toString(36) + Math.random().toString(36).substring(2);
   }
 }
 

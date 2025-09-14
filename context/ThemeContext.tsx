@@ -1,10 +1,8 @@
-import { colors } from '@/constants/colors';
+import { Colors, colors } from '@/constants/colors';
 import React from 'react';
 import { useColorScheme } from 'react-native';
 
-type Context = typeof colors.light | typeof colors.dark;
-
-const ThemeContext = React.createContext<Context>(colors.dark);
+export const ThemeContext = React.createContext<Colors>(colors.dark);
 
 interface Props {
   children: React.ReactNode;

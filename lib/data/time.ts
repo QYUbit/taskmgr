@@ -32,11 +32,11 @@ export class CalendarDate {
     }
 
     toDateObject(): Date {
-        return new Date(this.year, this.month, this.day);
-    }
+    return new Date(this.year, this.month - 1, this.day);
+}
 
     toString(): string {
-        return this.toDateObject().toISOString().split("T")[0]
+        return `${this.year}-${String(this.month).padStart(2, '0')}-${String(this.day).padStart(2, '0')}`;
     }
 
     compare(date: CalendarDate): -1 | 0 | 1 {

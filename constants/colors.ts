@@ -1,31 +1,26 @@
-const tintColorLight = '#0a7ea4';
-const tintColorDark = '#fff';
-const primaryColor = '#ff0000';
-const secondaryColor = '#007AFF';
+export type Colors = typeof colors.light | typeof colors.dark
 
 export const colors = {
   light: {
-    text: '#11181C',
-    background: '#fff',
-    background05: '#eee',
-    background2: '#ccc',
-    tint: tintColorLight,
-    icon: '#687076',
-    backdrop: 'rgba(0, 0, 0, 0.5)',
-    backdrop2: 'rgba(0, 0, 0, 0.8)',
-    primary: primaryColor,
-    secondary: secondaryColor,
+    background: '#FFFFFF',
+    surface: '#F8F9FA',
+    text: '#1F2937',
+    textSecondary: '#6B7280',
+    border: '#E5E7EB',
+    eventBackground: '#3B82F6',
+    eventText: '#FFFFFF',
+    seperator: '#D1D5DB',
+    currentTimeColor: '#EF4444'
   },
   dark: {
-    text: '#ECEDEE',
-    background: '#1c1e1f',
-    background05: '#111314',
-    background2: '#0B0D0E',
-    tint: tintColorDark,
-    icon: '#9BA1A6',
-    backdrop: 'rgba(0, 0, 0, 0.5)',
-    backdrop2: 'rgba(0, 0, 0, 0.8)',
-    primary: primaryColor,
-    secondary: secondaryColor,
-  },
+    background: '#111827',
+    surface: '#1F2937',
+    text: '#F9FAFB',
+    textSecondary: '#9CA3AF',
+    border: '#374151',
+    eventBackground: '#2563EB',
+    eventText: '#F9FAFB',
+    seperator: '#4B5563',
+    currentTimeColor: '#F87171'
+  }
 };

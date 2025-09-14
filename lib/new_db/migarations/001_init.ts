@@ -17,7 +17,7 @@ export const migration_001_init: Migration = {
                 description TEXT NOT NULL DEFAULT '',
                 isRepeating INTEGER DEFAULT 0,
                 repeatOn TEXT,                          -- JSON integer array
-                isTemplate INTEGER DEFAULT 0
+                isTemplate INTEGER DEFAULT 0,
                 dateStart TEXT,                         -- YYYY-MM-DD
                 dateEnd TEXT,                           -- YYYY-MM-DD
                 timeStart TEXT NOT NULL,                -- HH:MM
@@ -34,14 +34,15 @@ export const migration_001_init: Migration = {
                 timeStart TEXT NOT NULL,                -- HH:MM
                 timeEnd TEXT NOT NULL,                  -- HH:MM
                 sourceType TEXT NOT NULL,               -- manual or generated or template
-                isDismissed INTEGER NOT NULL DEFAULT 0
+                todoId TEXT,
+                isDismissed INTEGER NOT NULL DEFAULT 0,
                 completedAt TEXT DEFAULT '',            -- ISO
                 createdAt TEXT NOT NULL,                -- ISO
-                updatedAt TEXT NOT NULL                 -- ISO
-                FOREIGN KEY (todoId) REFERENCES todos (id) ON DELETE CASCADE,
+                updatedAt TEXT NOT NULL,                -- ISO
+                FOREIGN KEY (todoId) REFERENCES todos (id) ON DELETE CASCADE
             );
 
-                CREATE TABLE IF NOT EXISTS notifications (
+            CREATE TABLE IF NOT EXISTS notifications (
                 id TEXT PRIMARY KEY,                    -- UUID
                 eventId TEXT NOT NULL,
                 type TEXT NOT NULL,

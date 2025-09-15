@@ -58,14 +58,15 @@ export const migration_001_init: Migration = {
 
             await db.execAsync(`
                 INSERT INTO todos (id, title, description, repeatOn, isTemplate, dateStart, dateEnd, timeStart, timeEnd, createdAt, updatedAt)
-                VALUES 
+                VALUES
                     ('todo-1', 'Buy groceries', '', '[0,1,2,3,4,5,6]', 0, NULL, '2025-10-30', '10:00', '11:00', '2025-09-14T21:00:00Z', '2025-09-14T21:00:00Z'),
                     ('todo-2', 'Project planning', 'Set milestones for the new project', '[0,3,5]', 0, NULL, NULL, '09:00', '10:00', '2025-09-14T21:00:00Z', '2025-09-14T21:00:00Z'),
-                    ('todo-3', 'Matrix', 'Gonna escape the matrix', '[0,1,2,3,4,5,6]', 0, NULL, NULL, '08:00', '13:30', '2025-09-14T21:00:00Z', '2025-09-14T21:00:00Z');
+                    ('todo-3', 'Matrix', 'Gonna escape the matrix', '[0,1,2,3,4,6]', 0, NULL, NULL, '08:00', '13:30', '2025-09-14T21:00:00Z', '2025-09-14T21:00:00Z'),
+                    ('todo-4', 'Sleep', 'Zzzzz', '[0,1,2,3,4,5,6]', 0, NULL, NULL, '00:00', '07:20', '2025-09-14T21:00:00Z', '2025-09-14T21:00:00Z');
 
                 INSERT INTO events (id, title, description, date, timeStart, timeEnd, sourceType, todoId, isDismissed, completedAt, createdAt, updatedAt)
                 VALUES
-                    ('event-1', 'Go for a run', 'Jog in the park for 30 minutes', '${today}', '07:00', '07:30', 'manual', NULL, 0, '', '2025-09-14T21:00:00Z', '2025-09-14T21:00:00Z'),
+                    ('event-1', 'Go for a run', 'Jog in the park for 30 minutes', '${today}', '14:00', '14:30', 'manual', NULL, 0, '', '2025-09-14T21:00:00Z', '2025-09-14T21:00:00Z'),
                     ('event-2', 'Project planning meeting', 'Set milestones for the new project', '${today}', '09:00', '10:00', 'generated', 'todo-2', 0, '', '2025-09-14T21:00:00Z', '2025-09-14T21:00:00Z');
             `);
         }

@@ -1,13 +1,7 @@
-import DayView from '@/components/timeline/DayView';
-import { TimelineItem } from '@/lib/types/ui';
+import { Href, Redirect } from 'expo-router';
 import React from 'react';
 
-export default function DayScreen() {
-  const handleEventPress = (event: TimelineItem): void => {
-    console.log('Event pressed:', event.title);
-  };
-  
-  return (
-    <DayView onEventPress={handleEventPress} />
-  );
+export default function Index() {
+  const today = new Date().toISOString().split('T')[0];
+  return <Redirect href={`/day/${today}` as Href} />;
 }

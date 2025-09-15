@@ -1,2 +1,7 @@
-export const USE_FRESH_DB = true
-export const USE_SAMPLE_DB = true
+const config = {
+    freshDB: true,
+    sampleDB: true
+}
+
+export const USE_FRESH_DB = __DEV__? config.freshDB: false
+export const USE_SAMPLE_DB = __DEV__? config.sampleDB: false

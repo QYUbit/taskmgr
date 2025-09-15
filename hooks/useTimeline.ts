@@ -22,8 +22,6 @@ export function useTimeline(date: CalendarDate) {
     const combined = [...events, ...filteredGhostEvents]
     const sorted = combined.sort((a, b) => a.duration.start.compare(b.duration.start))
 
-    console.log(`Before: ${ghostEvents.length}, After: ${filteredGhostEvents.length}`)
-
     const processed = sorted.map((item, index) => {
       const overlapping = sorted.filter((otherEvent, otherIndex) => {
         return otherIndex !== index && item.duration.areOverlapping(otherEvent.duration)
@@ -32,13 +30,15 @@ export function useTimeline(date: CalendarDate) {
       return {
         ...item,
         width: overlapping.length > 0 ? `${100 / (overlapping.length + 1)}%` : '95%',
+        height: Math.max((item.duration.end.toMinutes() - item.duration.start.toMinutes()), 30),
+        top: (item.duration.start.toMinutes() / (24 * 60)) * (24 * 60) + 7,
         left: overlapping.length > 0 ? `${Math.max((overlapping.filter(i => i.duration.start.isSmallerOrEqual(item.duration.start)).length * 100) / (overlapping.length + 1), 2.5)}%` : '2.5%',
         isGhost: !("date" in item)
       };
     })
 
     setTimelineItems(processed)
-  }, [events, ghostEvents])
+  }, [events, filteredGhostEvents])
 
   const refetch = useCallback(async () => {
     await Promise.all([refetchEvents(), refetchGhosts()]);

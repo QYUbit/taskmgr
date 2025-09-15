@@ -9,8 +9,6 @@ interface EventCardProps {
 }
 
 export default function EventCard({ event, theme, onPress }: EventCardProps) {
-  const eventHeight = Math.max((event.duration.end.toMinutes() - event.duration.start.toMinutes()), 30);
-
   return (
     <TouchableOpacity
       style={[
@@ -18,7 +16,7 @@ export default function EventCard({ event, theme, onPress }: EventCardProps) {
         {
           backgroundColor: /*event.color ||*/ theme.eventBackground,
           opacity: event.isGhost ? 0.4 : 1,
-          height: eventHeight,
+          height: event.height,
         }
       ]}
       onPress={() => onPress && onPress(event)}

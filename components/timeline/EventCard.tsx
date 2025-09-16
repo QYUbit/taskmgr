@@ -15,8 +15,9 @@ export default function EventCard({ event, theme, onPress }: EventCardProps) {
         styles.event,
         {
           backgroundColor: theme.eventBackground,
-          opacity: event.isGhost ? 0.4 : 1,
+          opacity: event.isGhost ? theme.ghostOpacity : 1,
           height: event.height,
+          paddingVertical: event.height < 60 ? 4 : 12,
         }
       ]}
       onPress={() => onPress && onPress(event)}
@@ -25,9 +26,13 @@ export default function EventCard({ event, theme, onPress }: EventCardProps) {
       <Text style={[styles.eventTitle, { color: theme.eventText }]} numberOfLines={1}>
         {event.title}
       </Text>
-      <Text style={[styles.eventTime, { color: theme.eventText, opacity: 0.8 }]}>
-        {event.duration.start.toString()} - {event.duration.end.toString()}
-      </Text>
+      {
+        event.height > 40 && (
+          <Text style={[styles.eventTime, { color: theme.eventText, opacity: 0.8 }]}>
+            {event.duration.start.toString()} - {event.duration.end.toString()}
+          </Text>
+        )
+      }
     </TouchableOpacity>
   );
 };

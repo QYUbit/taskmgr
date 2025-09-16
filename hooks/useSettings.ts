@@ -33,7 +33,7 @@ export const useSettings = () => {
 
   useEffect(() => {
     loadSettings();
-  }, []);
+  }, [settings]);
 
   const loadSettings = async () => {
     try {

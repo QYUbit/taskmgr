@@ -20,6 +20,8 @@ export default function DayView({ date, onEventPress}: DayViewProps) {
   const { settings } = useSettings();
   const { timelineItems } = useTimeline(date);
 
+  const isToday = date.equals(CalendarDate.fromDateObject(new Date()))
+
   const scrollViewRef = useRef<ScrollView | null>(null)
 
   const dayString = date.toDateObject().toLocaleDateString('en-US', { 
@@ -36,8 +38,8 @@ export default function DayView({ date, onEventPress}: DayViewProps) {
 
   useFocusEffect(
     useCallback(() => {
-      scrollViewRef.current?.scrollTo({ y: getCurrentTimePosition() })
-    }, [])
+      if (isToday) scrollViewRef.current?.scrollTo({ y: getCurrentTimePosition() })
+    }, [isToday])
   )
   
   return (
@@ -80,7 +82,7 @@ export default function DayView({ date, onEventPress}: DayViewProps) {
               </View>
             ))}
             
-            {settings.showCurrentTime && (
+            {settings.showCurrentTime && isToday && (
               <TimeIndicator
                 time={getCurrentTimePosition()}
                 theme={theme}

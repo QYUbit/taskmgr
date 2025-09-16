@@ -15,8 +15,10 @@ export default function MonthView({ year, month, onDayPress }: MonthlyCalendarPr
   const theme = useTheme();
   const { settings } = useSettings();
   
+  const baseDate = settings.weekStartsOn === 1 ? new Date(2024, 0, 1) : new Date(2023, 11, 31);
   const weekDays = Array.from({ length: 7 }, (_, i) => {
-    const date = new Date(2024, 0, 1 + i);
+    const date = new Date(baseDate);
+    date.setDate(baseDate.getDate() + i);
     return date.toLocaleDateString('en-US', { weekday: 'short' });
   });
   
@@ -34,7 +36,7 @@ export default function MonthView({ year, month, onDayPress }: MonthlyCalendarPr
   
   const calendarDays: (number | null)[] = [];
   
-  for (let i = 0; i < settings.weekStartsOn; i++) {
+  if (settings.weekStartsOn === 0) {
     calendarDays.push(null);
   }
   
@@ -131,6 +133,6 @@ const styles = StyleSheet.create({
   weekRow: {
     flex: 1,
     flexDirection: 'row',
-    marginBottom: 16,
+    marginBottom: 12,
   },
 });

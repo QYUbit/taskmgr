@@ -10,7 +10,8 @@ export const colors = {
     eventBackground: '#3B82F6',
     eventText: '#FFFFFF',
     seperator: '#D1D5DB',
-    currentTimeColor: '#EF4444'
+    currentTimeColor: '#EF4444',
+    ghostOpacity: 0.7,
   },
   dark: {
     background: '#111827',
@@ -21,6 +22,7 @@ export const colors = {
     eventBackground: '#2563EB',
     eventText: '#F9FAFB',
     seperator: '#4B5563',
-    currentTimeColor: '#F87171'
+    currentTimeColor: '#F87171',
+    ghostOpacity: 0.4,
   }
 };

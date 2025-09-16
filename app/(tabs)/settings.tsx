@@ -23,7 +23,7 @@ export default function SettingsRoute() {
       <View style={[styles.header, { backgroundColor: theme.surface, borderBottomColor: theme.border }]}>
         <View style={styles.headerContent}>
           <Text style={[styles.headline, { color: theme.text }]}>
-            Settings
+            App Settings
           </Text>
         </View>
       </View>
@@ -130,7 +130,7 @@ export default function SettingsRoute() {
 
         <SettingRow
           title="Show ghost events"
-          description="Display past events transparently"
+          description="Display future automated events transparently"
           theme={theme}
         >
           <Switch

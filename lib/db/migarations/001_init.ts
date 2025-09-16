@@ -1,11 +1,13 @@
 import { USE_FRESH_DB, USE_SAMPLE_DB } from '@/dev.config';
 import { CalendarDate } from '@/lib/data/time';
+import { log } from '@/lib/utils/log';
 import { Migration } from '../../types/migrations';
 
 export const migration_001_init: Migration = {
     toVersion: 1,
     migrate: async (db) => {
         if (USE_FRESH_DB) {
+            log("Setting up fresh DB", "info", "database");
             await db.execAsync(`DROP TABLE IF EXISTS notifications`);
             await db.execAsync(`DROP TABLE IF EXISTS events`);
             await db.execAsync(`DROP TABLE IF EXISTS todos`);
@@ -54,6 +56,7 @@ export const migration_001_init: Migration = {
         `);
 
         if (USE_SAMPLE_DB) {
+            log("Setting up sample entries", "info", "database");
             const today = CalendarDate.fromDateObject(new Date()).toString()
 
             await db.execAsync(`
@@ -67,7 +70,9 @@ export const migration_001_init: Migration = {
                 INSERT INTO events (id, title, description, date, timeStart, timeEnd, sourceType, todoId, isDismissed, completedAt, createdAt, updatedAt)
                 VALUES
                     ('event-1', 'Go for a run', 'Jog in the park for 30 minutes', '${today}', '14:00', '14:30', 'manual', NULL, 0, '', '2025-09-14T21:00:00Z', '2025-09-14T21:00:00Z'),
-                    ('event-2', 'Project planning meeting', 'Set milestones for the new project', '${today}', '09:00', '10:00', 'generated', 'todo-2', 0, '', '2025-09-14T21:00:00Z', '2025-09-14T21:00:00Z');
+                    ('event-2', 'Project planning meeting', 'Set milestones for the new project', '${today}', '09:00', '10:00', 'generated', 'todo-2', 0, '', '2025-09-14T21:00:00Z', '2025-09-14T21:00:00Z'),
+                    ('event-3', 'Go for a B', 'Jog in the park for 3 minutes', '${today}', '15:00', '15:40', 'manual', NULL, 0, '', '2025-09-14T21:00:00Z', '2025-09-14T21:00:00Z'),
+                    ('event-4', 'Go for a C', 'Jog in the park for 3 minutes', '${today}', '16:00', '16:50', 'manual', NULL, 0, '', '2025-09-14T21:00:00Z', '2025-09-14T21:00:00Z');
             `);
         }
     },

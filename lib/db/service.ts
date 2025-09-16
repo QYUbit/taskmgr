@@ -1,6 +1,7 @@
 import * as SQLite from 'expo-sqlite';
 import { CalendarDate, DateRange, TimeRange } from '../data/time';
 import { Event, NewEvent, NewTodo, Todo } from '../types/data';
+import { log } from '../utils/log';
 import { migrations } from './migrations';
 
 export class DBService {
@@ -23,9 +24,12 @@ export class DBService {
     if (this.isInitialized) return;
     if (this.initializingPromise) return this.initializingPromise;
 
+    log("Initializing DB", "info", "database");
     this.initializingPromise = (async () => {
       this.db = await SQLite.openDatabaseAsync('calendar.db');
       await this.runMigrations();
+      log("DB initialized", "info", "database");
+
       this.isInitialized = true;
       this.initializingPromise = null;
     })();
@@ -47,8 +51,10 @@ export class DBService {
     }
 
     if (currentVersion !== this.LATEST_VERSION) {
-      console.warn(
-        `DB-Version is ${currentVersion}, but LATEST_VERSION is ${this.LATEST_VERSION}. Missing migration?`
+      log(
+        `DB-Version is ${currentVersion}, but LATEST_VERSION is ${this.LATEST_VERSION}. Missing migration?`,
+        'warn',
+        'database'
       );
     }
   }

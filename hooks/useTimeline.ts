@@ -12,37 +12,56 @@ export function useTimeline(date: CalendarDate) {
   const loading = eventsLoading || ghostLoading;
   const error = eventsError || ghostError;
 
+  const dateString = date.toString();
+
   const filteredGhostEvents = useMemo(() => {
-    return ghostEvents.filter((event) => {
-      return !events.some(item => item.todoId === event.todoId)
-    })
-  }, [ghostEvents])
+    const filtered = ghostEvents.filter((ghostEvent) => {
+      const hasMatchingEvent = events.some(event => event.todoId === ghostEvent.todoId);
+      return !hasMatchingEvent;
+    });
+    return filtered;
+  }, [ghostEvents, events]);
 
   useEffect(() => {
-    const combined = [...events, ...filteredGhostEvents]
-    const sorted = combined.sort((a, b) => a.duration.start.compare(b.duration.start))
+    
+    if (loading) {
+      return;
+    }
+
+    const combined = [...events, ...filteredGhostEvents];
+    
+    if (combined.length === 0) {
+      setTimelineItems([]);
+      return;
+    }
+
+    const sorted = combined.sort((a, b) => a.duration.start.compare(b.duration.start));
 
     const processed = sorted.map((item, index) => {
       const overlapping = sorted.filter((otherEvent, otherIndex) => {
-        return otherIndex !== index && item.duration.areOverlapping(otherEvent.duration)
+        return otherIndex !== index && item.duration.areOverlapping(otherEvent.duration);
       });
 
-      return {
+      const isGhost = !("date" in item);
+      
+      const processedItem = {
         ...item,
         width: overlapping.length > 0 ? `${100 / (overlapping.length + 1)}%` : '95%',
         height: Math.max((item.duration.end.toMinutes() - item.duration.start.toMinutes()), 30),
         top: (item.duration.start.toMinutes() / (24 * 60)) * (24 * 60) + 7,
         left: overlapping.length > 0 ? `${Math.max((overlapping.filter(i => i.duration.start.isSmallerOrEqual(item.duration.start)).length * 100) / (overlapping.length + 1), 2.5)}%` : '2.5%',
-        isGhost: !("date" in item)
-      };
-    })
+        isGhost
+      } as TimelineItem;
 
-    setTimelineItems(processed)
-  }, [events, filteredGhostEvents])
+      return processedItem;
+    });
+
+    setTimelineItems(processed);
+  }, [events, filteredGhostEvents, loading, dateString]);
 
   const refetch = useCallback(async () => {
     await Promise.all([refetchEvents(), refetchGhosts()]);
-  }, [refetchEvents, refetchGhosts]);
+  }, [refetchEvents, refetchGhosts, dateString]);
 
   return {
     timelineItems,

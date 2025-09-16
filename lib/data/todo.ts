@@ -6,6 +6,11 @@ export function todoAppliesToDate(todo: Todo, date: CalendarDate): boolean {
         return false
     }
 
+    const today = CalendarDate.fromDateObject(new Date())
+    if (date.isSmallerThen(today)) {
+        return false
+    }
+
     if (todo.dateRange && !todo.dateRange.isInRange(date)) {
         return false
     }

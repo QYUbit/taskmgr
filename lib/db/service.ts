@@ -7,6 +7,7 @@ export class DBService {
   private static instance: DBService;
   private db!: SQLite.SQLiteDatabase;
   private isInitialized = false;
+  private initializingPromise: Promise<void> | null = null;
   private readonly LATEST_VERSION = 1;
 
   private constructor() {}
@@ -20,11 +21,16 @@ export class DBService {
 
   async init(): Promise<void> {
     if (this.isInitialized) return;
-    this.db = await SQLite.openDatabaseAsync('calendar.db');
+    if (this.initializingPromise) return this.initializingPromise;
 
-    await this.runMigrations();
+    this.initializingPromise = (async () => {
+      this.db = await SQLite.openDatabaseAsync('calendar.db');
+      await this.runMigrations();
+      this.isInitialized = true;
+      this.initializingPromise = null;
+    })();
 
-    this.isInitialized = true;
+    return this.initializingPromise;
   }
 
   private async runMigrations(): Promise<void> {
@@ -195,12 +201,19 @@ export class DBService {
   async getEventsForDate(dateString: string): Promise<Event[]> {
     await this.init();
 
-    const rows = await this.db.getAllAsync(
+    try {
+      const rows = await this.db.getAllAsync(
       `SELECT * FROM events WHERE date = ? ORDER BY timeStart`,
       [dateString]
-    );
+      );
+      return rows.map((row: any) => this.mapRowToEvent(row));
+
+    } catch (err: any) {
+      console.error(err.message)
+      throw err
+    }
     
-    return rows.map((row: any) => this.mapRowToEvent(row));
+    
   }
 
   private mapRowToEvent(row: any): Event {

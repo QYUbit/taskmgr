@@ -1,3 +1,4 @@
+import { useSettings } from '@/hooks/useSettings';
 import { useTheme } from '@/hooks/useTheme';
 import { CalendarDate } from '@/lib/data/time';
 import React from 'react';
@@ -12,6 +13,7 @@ export interface MonthlyCalendarProps {
 
 export default function MonthView({ year, month, onDayPress }: MonthlyCalendarProps) {
   const theme = useTheme();
+  const { settings } = useSettings();
   
   const weekDays = Array.from({ length: 7 }, (_, i) => {
     const date = new Date(2024, 0, 1 + i);
@@ -32,7 +34,7 @@ export default function MonthView({ year, month, onDayPress }: MonthlyCalendarPr
   
   const calendarDays: (number | null)[] = [];
   
-  for (let i = 0; i < firstDayOfWeek; i++) {
+  for (let i = 0; i < settings.weekStartsOn; i++) {
     calendarDays.push(null);
   }
   
@@ -97,7 +99,7 @@ export default function MonthView({ year, month, onDayPress }: MonthlyCalendarPr
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingBottom: 36
+    paddingBottom: 5
   },
   header: {
     borderBottomWidth: 1,
@@ -124,11 +126,11 @@ const styles = StyleSheet.create({
   calendarGrid: {
     flex: 1,
     paddingHorizontal: 12,
-    paddingBottom: 16,
+    paddingBottom: 0,
   },
   weekRow: {
     flex: 1,
     flexDirection: 'row',
-    marginBottom: 6,
+    marginBottom: 16,
   },
 });

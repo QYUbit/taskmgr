@@ -1,15 +1,21 @@
 import MonthView from '@/components/month/MonthView';
+import { CalendarDate } from '@/lib/data/time';
 import { Href, useLocalSearchParams, useRouter } from 'expo-router';
 import React from 'react';
 
 export default function MonthScreen() {
   const { time } = useLocalSearchParams<{ time: string }>();
-  const [year, month] = time.split('-').map(p => Number(p));
+
+  const date = CalendarDate.fromDateObject(new Date())
+
+  const [year, month] = time
+  ? time.split('-').map(p => Number(p))
+  : [date.year, date.month];
 
   const router = useRouter();
 
   const handleDayPress = (day: number) => {
-    router.push(`/day/${year}-${month}-${day}` as Href)
+    router.push(`/day/${year}-${month}-${day}` as Href);
   };
   
   return (

@@ -14,7 +14,7 @@ export default function EventCard({ event, theme, onPress }: EventCardProps) {
       style={[
         styles.event,
         {
-          backgroundColor: /*event.color ||*/ theme.eventBackground,
+          backgroundColor: theme.eventBackground,
           opacity: event.isGhost ? 0.4 : 1,
           height: event.height,
         }

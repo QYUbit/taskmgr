@@ -3,10 +3,9 @@ import { useTheme } from "@/hooks/useTheme";
 import { useTimeline } from "@/hooks/useTimeline";
 import { CalendarDate } from "@/lib/data/time";
 import { TimelineItem } from "@/lib/types/ui";
-import Ionicons from '@expo/vector-icons/Ionicons';
-import { Href, useFocusEffect, useRouter } from "expo-router";
+import { useFocusEffect } from "expo-router";
 import React, { useCallback, useRef } from "react";
-import { SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View, ViewStyle } from "react-native";
+import { SafeAreaView, ScrollView, StyleSheet, Text, View, ViewStyle } from "react-native";
 import EventCard from "./EventCard";
 import TimeColumn from "./TimeColumn";
 import TimeIndicator from "./TimeIndicator";
@@ -18,7 +17,6 @@ interface DayViewProps {
 
 export default function DayView({ date, onEventPress}: DayViewProps) {
   const theme = useTheme();
-  const router = useRouter();
   const { settings } = useSettings();
   const { timelineItems } = useTimeline(date);
 
@@ -49,9 +47,6 @@ export default function DayView({ date, onEventPress}: DayViewProps) {
           <Text style={[styles.dateText, { color: theme.text }]}>
             {dayString}
           </Text>
-          <TouchableOpacity onPress={() => router.push(`/month/${date.year}-${date.month}` as Href)}>
-            <Ionicons name="calendar" size={24} color={theme.text} />
-          </TouchableOpacity>
         </View>
       </View>
       
@@ -99,7 +94,7 @@ export default function DayView({ date, onEventPress}: DayViewProps) {
 };
 
 const styles = StyleSheet.create({
-    container: {
+  container: {
     flex: 1,
   },
   header: {
@@ -133,7 +128,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingTop: 20,
-    paddingBottom: 50,
+    paddingBottom: 20,
   },
   dayContainer: {
     flexDirection: 'row',

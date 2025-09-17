@@ -8,7 +8,7 @@ export default function TimeIndicator({ time, theme }: { time: number, theme: Co
         style={[
           styles.dot,
           {
-            backgroundColor: theme.currentTimeColor,
+            backgroundColor: theme.red,
             top: time - 4,
           }
         ]}
@@ -17,7 +17,7 @@ export default function TimeIndicator({ time, theme }: { time: number, theme: Co
         style={[
           styles.line,
           {
-            backgroundColor: theme.currentTimeColor,
+            backgroundColor: theme.red,
             top: time,
           }
         ]}

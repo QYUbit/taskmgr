@@ -9,8 +9,8 @@ export default function TabLayout() {
     <Tabs
       screenOptions={{
         tabBarStyle: { backgroundColor: theme.surface, borderColor: theme.border }, 
-        tabBarActiveTintColor: theme.eventBackground,
-        tabBarInactiveTintColor: theme.seperator,
+        tabBarActiveTintColor: theme.primary,
+        tabBarInactiveTintColor: theme.semiSoft,
         headerShown: false,
       }}
     >
@@ -19,7 +19,7 @@ export default function TabLayout() {
         options={{
           title: 'Day',
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="person" size={size} color={color} />
+            <Ionicons name="today" size={size} color={color} />
           ),
         }}
       />
@@ -33,11 +33,20 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
+        name="todos"
+        options={{
+          title: 'Auto',
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="albums" size={size} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
         name="settings"
         options={{
           title: 'Settings',
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="settings-outline" size={size} color={color} />
+            <Ionicons name="settings" size={size} color={color} />
           ),
         }}
       />

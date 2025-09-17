@@ -5,14 +5,14 @@ export default function TimeColumn({ theme }: { theme: Colors }) {
   const hours: number[] = Array.from({ length: 24 }, (_, i) => i);
   
   return (
-    <View style={styles.seperator}>
+    <View style={styles.semiSoft}>
       {hours.map((hour: number) => {
         return hour !== 25 ? (
           <View key={hour} style={styles.slot}>
             <Text style={[styles.text, { color: theme.textSecondary }]}>
               {hour.toString().padStart(2, '0')}:00
             </Text>
-            <View style={[styles.line, { backgroundColor: theme.seperator }]} />
+            <View style={[styles.line, { backgroundColor: theme.semiSoft }]} />
           </View>
         ) : (
           <View key={hour} style={styles.slot}></View>
@@ -23,7 +23,7 @@ export default function TimeColumn({ theme }: { theme: Colors }) {
 };
 
 const styles = StyleSheet.create({
-  seperator: {
+  semiSoft: {
     width: 80,
     paddingRight: 10,
     paddingLeft: 10,

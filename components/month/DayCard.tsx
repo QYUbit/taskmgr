@@ -12,8 +12,8 @@ export default function DayCard({ day, theme, isHighlighted, onPress }: DayCardP
   return (
     <TouchableOpacity
       style={[styles.dayCard, { 
-        backgroundColor: isHighlighted ? theme.eventBackground + "70" : theme.surface,
-        borderColor: isHighlighted ? theme.eventBackground : theme.border,
+        backgroundColor: isHighlighted ? theme.primary + "70" : theme.surface,
+        borderColor: isHighlighted ? theme.primary : theme.border,
       }]}
       onPress={() => day !== null && onPress ? onPress() : null}
     >

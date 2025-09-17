@@ -6,6 +6,7 @@ import { TimelineItem } from "@/lib/types/ui";
 import { useFocusEffect } from "expo-router";
 import React, { useCallback, useRef } from "react";
 import { SafeAreaView, ScrollView, StyleSheet, Text, View, ViewStyle } from "react-native";
+import Spinner from "../ui/Spinner";
 import EventCard from "./EventCard";
 import TimeColumn from "./TimeColumn";
 import TimeIndicator from "./TimeIndicator";
@@ -17,8 +18,8 @@ interface DayViewProps {
 
 export default function DayView({ date, onEventPress}: DayViewProps) {
   const theme = useTheme();
-  const { settings } = useSettings();
-  const { timelineItems } = useTimeline(date);
+  const { settings, loading: settingsLoading } = useSettings();
+  const { timelineItems, loading: timelineLoading } = useTimeline(date);
 
   const isToday = date.equals(CalendarDate.fromDateObject(new Date()))
 
@@ -41,6 +42,10 @@ export default function DayView({ date, onEventPress}: DayViewProps) {
       if (isToday) scrollViewRef.current?.scrollTo({ y: getCurrentTimePosition() })
     }, [isToday])
   )
+
+  if (settingsLoading || timelineLoading) {
+    return <Spinner theme={theme} />
+  }
   
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>

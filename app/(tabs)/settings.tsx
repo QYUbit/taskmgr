@@ -1,21 +1,18 @@
 import NumberInput from '@/components/ui/NumberInput';
 import Picker from '@/components/ui/Picker';
+import Spinner from '@/components/ui/Spinner';
 import { Colors } from '@/constants/colors';
 import { useSettings } from '@/hooks/useSettings';
 import { useTheme } from '@/hooks/useTheme';
 import React from 'react';
-import { ActivityIndicator, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
 
 export default function SettingsRoute() {
   const { settings, updateSetting, loading } = useSettings();
   const theme = useTheme();
 
   if (loading) {
-    return (
-      <View style={[styles.container, { backgroundColor: theme.background }]}>
-        <ActivityIndicator size="large" color={theme.eventBackground} />
-      </View>
-    );
+    return <Spinner theme={theme} />
   }
 
   return (
@@ -37,7 +34,7 @@ export default function SettingsRoute() {
           <Switch
             value={settings.autoGenerateEvents}
             onValueChange={(value) => updateSetting('autoGenerateEvents', value)}
-            trackColor={{ false: theme.border, true: theme.eventBackground }}
+            trackColor={{ false: theme.border, true: theme.primary }}
             thumbColor={theme.surface}
           />
         </SettingRow>
@@ -58,7 +55,7 @@ export default function SettingsRoute() {
           <Switch
             value={settings.autoCleanupOldEvents}
             onValueChange={(value) => updateSetting('autoCleanupOldEvents', value)}
-            trackColor={{ false: theme.border, true: theme.eventBackground }}
+            trackColor={{ false: theme.border, true: theme.primary }}
             thumbColor={theme.surface}
           />
         </SettingRow>
@@ -88,9 +85,12 @@ export default function SettingsRoute() {
         
         <SettingRow title="Week starts on" theme={theme}>
           <Picker
-            options={['Sunday', 'Moday']}
-            selectedOption={settings.weekStartsOn === 0 ? 'Sunday' : 'Moday'}
-            onSelect={(value) => updateSetting('weekStartsOn', value === 'Sunday' ? 0 : 1)}
+            options={[
+              { label: 'Sunday', value: 0 as (0 | 1) },
+              { label: 'Monday', value: 1 as (0 | 1) }
+            ]}
+            selectedValue={settings.weekStartsOn}
+            onValueChange={(value) => updateSetting('weekStartsOn', value)}
             theme={theme}
           />
         </SettingRow>
@@ -103,7 +103,7 @@ export default function SettingsRoute() {
           <Switch
             value={settings.notificationsEnabled}
             onValueChange={(value) => updateSetting('notificationsEnabled', value)}
-            trackColor={{ false: theme.border, true: theme.eventBackground }}
+            trackColor={{ false: theme.border, true: theme.primary }}
             thumbColor={theme.surface}
           />
         </SettingRow>
@@ -133,7 +133,7 @@ export default function SettingsRoute() {
           <Switch
             value={settings.showGhostEvents}
             onValueChange={(value) => updateSetting('showGhostEvents', value)}
-            trackColor={{ false: theme.border, true: theme.eventBackground }}
+            trackColor={{ false: theme.border, true: theme.primary }}
             thumbColor={theme.surface}
           />
         </SettingRow>
@@ -146,7 +146,7 @@ export default function SettingsRoute() {
           <Switch
             value={settings.showCurrentTime}
             onValueChange={(value) => updateSetting('showCurrentTime', value)}
-            trackColor={{ false: theme.border, true: theme.eventBackground }}
+            trackColor={{ false: theme.border, true: theme.primary }}
             thumbColor={theme.surface}
           />
         </SettingRow>
@@ -163,7 +163,7 @@ interface SettingsRowProps {
 }
 
 const SettingRow = ({ title, description, children, theme }: SettingsRowProps) => (
-  <View style={[styles.rowContainer, { borderBottomColor: theme.seperator }]}>
+  <View style={[styles.rowContainer, { borderBottomColor: theme.semiSoft }]}>
     <View style={styles.rowLeft}>
       <Text style={[styles.rowTitle, { color: theme.text }]}>{title}</Text>
       {description && (

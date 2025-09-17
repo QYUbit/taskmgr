@@ -1,68 +1,77 @@
 import { Colors } from "@/constants/colors";
-import { Key, useState } from "react";
+import { forwardRef, useImperativeHandle, useState } from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
-export interface PickerOptions<T> {
-    label: string;
-    value: T;
-}
+type PickerProps = {
+  options: string[];
+  selectedOption?: string;
+  onSelect: (option: string) => void;
+  theme: Colors;
+};
 
-export interface PickerProps<T> {
-    options: PickerOptions<T>[];
-    selectedValue: T;
-    theme: Colors;
-    onValueChange?: (newValue: T) => void
-}
+type PickerRef = {
+  isOpen: boolean;
+  toggle: () => void;
+  open: () => void;
+  close: () => void;
+};
 
-export default function Picker<T>({ options, selectedValue, onValueChange, theme }: PickerProps<T>) {
-  const [showOptions, setShowOptions] = useState(false);
-  const selectedOption = options.find(opt => opt.value === selectedValue);
+const Picker = forwardRef<PickerRef, PickerProps>((props, ref) => {
+  const { theme } = props;
+  const [isOpen, setIsOpen] = useState(false);
+
+  useImperativeHandle(ref, () => ({
+    isOpen,
+    toggle: () => setIsOpen(!isOpen),
+    open: () => setIsOpen(true),
+    close: () => setIsOpen(false),
+  }));
 
   return (
-    <TouchableOpacity
-      style={[styles.container, { backgroundColor: theme.surface, borderColor: theme.border }]}
-      onPress={() => setShowOptions(!showOptions)}
-    >
-      <Text style={[styles.text, { color: theme.text }]}>
-        {selectedOption?.label}
-      </Text>
+    <View style={[styles.container]}>
+      <TouchableOpacity
+        style={[styles.dropdown, { backgroundColor: theme.surface, borderColor: theme.border }]}
+        onPress={() => setIsOpen(!isOpen)}
+      >
+        <Text style={[styles.text, { color: theme.text }]}>
+          {props.selectedOption || 'Select an option'}
+        </Text>
+      </TouchableOpacity>
 
-      {showOptions && (
+      {isOpen && (
         <View style={[styles.options, { backgroundColor: theme.surface, borderColor: theme.border }]}>
-          {options.map((option) => (
+          {props.options.map((option, index) => (
             <TouchableOpacity
-              key={option.value as Key}
+              key={index}
               style={styles.option}
               onPress={() => {
-                onValueChange && onValueChange(option.value);
-                setShowOptions(false);
+                props.onSelect(option);
+                setIsOpen(false);
               }}
             >
               <Text style={[styles.optionText, {
-                color: option.value === selectedValue ? theme.eventBackground : theme.text
+                color: option === props.selectedOption ? theme.eventBackground : theme.text
               }]}>
-                {option.label}
+                {option}
               </Text>
             </TouchableOpacity>
           ))}
         </View>
       )}
-    </TouchableOpacity>
+    </View>
   );
-};
+});
 
 const styles = StyleSheet.create({
-  container: {
-    width: 120,
+  container: { position: 'relative' },
+  dropdown: {
     height: 40,
     borderWidth: 1,
     borderRadius: 4,
     justifyContent: 'center',
     paddingHorizontal: 12,
   },
-  text: {
-    fontSize: 16,
-  },
+  text: { fontSize: 16 },
   options: {
     position: 'absolute',
     top: 40,
@@ -73,9 +82,12 @@ const styles = StyleSheet.create({
     zIndex: 10,
   },
   option: {
-    padding: 10,
+    paddingHorizontal: 10,
+    paddingVertical: 10
   },
   optionText: {
-    fontSize: 16,
+    fontSize: 16
   },
 });
+
+export default Picker;

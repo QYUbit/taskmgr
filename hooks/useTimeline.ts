@@ -23,7 +23,6 @@ export function useTimeline(date: CalendarDate) {
   }, [ghostEvents, events]);
 
   useEffect(() => {
-    
     if (loading) {
       return;
     }

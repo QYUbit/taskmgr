@@ -88,12 +88,9 @@ export default function SettingsRoute() {
         
         <SettingRow title="Week starts on" theme={theme}>
           <Picker
-            options={[
-              { label: 'Sunday', value: 0 as (0 | 1) },
-              { label: 'Monday', value: 1 as (0 | 1) }
-            ]}
-            selectedValue={settings.weekStartsOn}
-            onValueChange={(value) => updateSetting('weekStartsOn', value)}
+            options={['Sunday', 'Moday']}
+            selectedOption={settings.weekStartsOn === 0 ? 'Sunday' : 'Moday'}
+            onSelect={(value) => updateSetting('weekStartsOn', value === 'Sunday' ? 0 : 1)}
             theme={theme}
           />
         </SettingRow>

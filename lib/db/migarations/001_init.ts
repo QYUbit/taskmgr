@@ -1,13 +1,13 @@
 import { USE_FRESH_DB, USE_SAMPLE_DB } from '@/dev.config';
 import { CalendarDate } from '@/lib/data/time';
-import { log } from '@/lib/utils/log';
+import { logger } from '@/lib/utils/log';
 import { Migration } from '../../types/migrations';
 
 export const migration_001_init: Migration = {
     toVersion: 1,
     migrate: async (db) => {
         if (USE_FRESH_DB) {
-            log("Setting up fresh DB", "info", "database");
+            logger("database").info("Setting up fresh DB");
             await db.execAsync(`DROP TABLE IF EXISTS notifications`);
             await db.execAsync(`DROP TABLE IF EXISTS events`);
             await db.execAsync(`DROP TABLE IF EXISTS todos`);
@@ -56,7 +56,7 @@ export const migration_001_init: Migration = {
         `);
 
         if (USE_SAMPLE_DB) {
-            log("Setting up sample entries", "info", "database");
+            logger("database").info("Setting up sample entries");
             const today = CalendarDate.fromDateObject(new Date()).toString()
 
             await db.execAsync(`

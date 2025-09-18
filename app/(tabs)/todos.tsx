@@ -1,5 +1,5 @@
+import TodoCard from '@/components/todos/TodoCard';
 import Spinner from '@/components/ui/Spinner';
-import TodoCard from '@/components/ui/TodoCard';
 import { useTheme } from '@/hooks/useTheme';
 import { useTodos } from '@/hooks/useTodos';
 import React from 'react';

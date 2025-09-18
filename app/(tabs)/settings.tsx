@@ -1,15 +1,26 @@
-import NumberInput from '@/components/ui/NumberInput';
-import Picker from '@/components/ui/Picker';
+import NumberInput from '@/components/settings/NumberInput';
+import Picker, { PickerRef } from '@/components/settings/Picker';
+import SettingRow from '@/components/settings/SettingsView';
 import Spinner from '@/components/ui/Spinner';
-import { Colors } from '@/constants/colors';
 import { useSettings } from '@/hooks/useSettings';
 import { useTheme } from '@/hooks/useTheme';
-import React from 'react';
+import { useFocusEffect } from 'expo-router';
+import React, { useCallback, useRef } from 'react';
 import { ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
 
 export default function SettingsRoute() {
   const { settings, updateSetting, loading } = useSettings();
   const theme = useTheme();
+
+  const weekStartPickerRef = useRef<PickerRef>(null);
+
+  useFocusEffect(
+    useCallback(() => {
+      return () => {
+        weekStartPickerRef.current?.close()
+      }
+    }, [])
+  )
 
   if (loading) {
     return <Spinner theme={theme} />
@@ -90,8 +101,9 @@ export default function SettingsRoute() {
               { label: 'Monday', value: 1 as (0 | 1) }
             ]}
             selectedValue={settings.weekStartsOn}
-            onValueChange={(value) => updateSetting('weekStartsOn', value)}
+            onValueChange={(value: any) => updateSetting('weekStartsOn', value)}
             theme={theme}
+            ref={weekStartPickerRef}
           />
         </SettingRow>
 
@@ -155,29 +167,6 @@ export default function SettingsRoute() {
   );
 };
 
-interface SettingsRowProps {
-  title: string;
-  description?: string;
-  children: React.ReactNode;
-  theme: Colors;
-}
-
-const SettingRow = ({ title, description, children, theme }: SettingsRowProps) => (
-  <View style={[styles.rowContainer, { borderBottomColor: theme.semiSoft }]}>
-    <View style={styles.rowLeft}>
-      <Text style={[styles.rowTitle, { color: theme.text }]}>{title}</Text>
-      {description && (
-        <Text style={[styles.rowDescription, { color: theme.textSecondary }]}>
-          {description}
-        </Text>
-      )}
-    </View>
-    <View style={styles.rowRight}>
-      {children}
-    </View>
-  </View>
-);
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -206,28 +195,5 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '600',
     marginBottom: 12,
-  },
-  rowContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-  },
-  rowLeft: {
-    flex: 1,
-    marginRight: 16,
-  },
-  rowTitle: {
-    fontSize: 16,
-    fontWeight: '500',
-  },
-  rowDescription: {
-    fontSize: 14,
-    marginTop: 4,
-  },
-  rowRight: {
-    minWidth: 100,
-    alignItems: 'flex-end',
   },
 });

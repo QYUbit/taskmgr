@@ -1,22 +1,42 @@
 import { Colors } from "@/constants/colors";
-import { Key, useState } from "react";
+import { forwardRef, Key, useCallback, useImperativeHandle, useState } from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
-export interface PickerOptions<T> {
-    label: string;
-    value: T;
+export interface PickerOptions {
+  label: string;
+  value: any;
 }
 
-export interface PickerProps<T> {
-    options: PickerOptions<T>[];
-    selectedValue: T;
-    theme: Colors;
-    onValueChange?: (newValue: T) => void
+export interface PickerProps {
+  options: PickerOptions[];
+  selectedValue: any;
+  theme: Colors;
+  onValueChange?: (newValue: any) => void
 }
 
-export default function Picker<T>({ options, selectedValue, onValueChange, theme }: PickerProps<T>) {
+export interface PickerRef {
+  isOpen: () => boolean;
+  open: () => void;
+  close: () => void;
+  toggle: () => void;
+}
+
+
+const Picker = forwardRef<PickerRef, PickerProps>(({ options, selectedValue, onValueChange, theme }, ref) => {
   const [showOptions, setShowOptions] = useState(false);
   const selectedOption = options.find(opt => opt.value === selectedValue);
+
+  const open = useCallback(() => setShowOptions(true), []);
+  const close = useCallback(() => setShowOptions(false), []);
+  const toggle = useCallback(() => setShowOptions(p => !p), []);
+  const isOpen = useCallback(() => showOptions, [showOptions]);
+
+  useImperativeHandle(ref, () => ({
+    open,
+    close,
+    toggle,
+    isOpen
+  }), [open, close, toggle, isOpen]);
 
   return (
     <TouchableOpacity
@@ -49,7 +69,7 @@ export default function Picker<T>({ options, selectedValue, onValueChange, theme
       )}
     </TouchableOpacity>
   );
-};
+});
 
 const styles = StyleSheet.create({
   container: {
@@ -79,3 +99,5 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
 });
+
+export default Picker;

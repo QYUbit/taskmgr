@@ -1,13 +1,17 @@
+import { useEventOperations } from "@/hooks/useEvents";
 import { useSettings } from "@/hooks/useSettings";
 import { useTheme } from "@/hooks/useTheme";
 import { useTimeline } from "@/hooks/useTimeline";
 import { CalendarDate } from "@/lib/data/time";
+import { Event, NewEvent } from "@/lib/types/data";
 import { TimelineItem } from "@/lib/types/ui";
 import { useFocusEffect } from "expo-router";
-import React, { useCallback, useRef } from "react";
+import React, { useCallback, useRef, useState } from "react";
 import { SafeAreaView, ScrollView, StyleSheet, Text, View, ViewStyle } from "react-native";
+import FloatingActionButton from "../ui/AddButton";
 import Spinner from "../ui/Spinner";
 import EventCard from "./EventCard";
+import EventFormSheet from "./EventSheet";
 import TimeColumn from "./TimeColumn";
 import TimeIndicator from "./TimeIndicator";
 
@@ -19,7 +23,11 @@ interface DayViewProps {
 export default function DayView({ date, onEventPress}: DayViewProps) {
   const theme = useTheme();
   const { settings, loading: settingsLoading } = useSettings();
-  const { timelineItems, loading: timelineLoading } = useTimeline(date);
+  const { timelineItems, loading: timelineLoading, refetch } = useTimeline(date);
+  const { createEvent, updateEvent, deleteEvent } = useEventOperations();
+
+  const [showEventForm, setShowEventForm] = useState(false);
+  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
 
   const isToday = date.equals(CalendarDate.fromDateObject(new Date()))
 
@@ -42,6 +50,36 @@ export default function DayView({ date, onEventPress}: DayViewProps) {
       if (isToday) scrollViewRef.current?.scrollTo({ y: getCurrentTimePosition() })
     }, [isToday])
   )
+
+  const handleEventPress = (event: TimelineItem) => {
+    // Check if this is a real event (not a ghost event)
+    if (!event.isGhost) {
+      setSelectedEvent(event as unknown as Event);
+      setShowEventForm(true);
+    }
+    onEventPress?.(event);
+  };
+
+  const handleCreateEvent = () => {
+    setSelectedEvent(null);
+    setShowEventForm(true);
+  };
+
+  const handleSaveEvent = async (eventData: NewEvent | Partial<Event>) => {
+    if ('id' in eventData) {
+      // Update existing event
+      await updateEvent(eventData.id || '', eventData);
+    } else {
+      // Create new event
+      await createEvent(eventData as NewEvent);
+    }
+    await refetch();
+  };
+
+  const handleDeleteEvent = async (id: string) => {
+    await deleteEvent(id);
+    await refetch();
+  };
 
   if (settingsLoading || timelineLoading) {
     return <Spinner theme={theme} />
@@ -82,7 +120,7 @@ export default function DayView({ date, onEventPress}: DayViewProps) {
                 <EventCard
                   event={event}
                   theme={theme}
-                  onPress={onEventPress}
+                  onPress={() => handleEventPress(event)}
                 />
               </View>
             ))}
@@ -96,6 +134,25 @@ export default function DayView({ date, onEventPress}: DayViewProps) {
           </View>
         </View>
       </ScrollView>
+      
+      <FloatingActionButton
+        onPress={handleCreateEvent}
+        theme={theme}
+        visible={!showEventForm}
+      />
+      
+      <EventFormSheet
+        visible={showEventForm}
+        onClose={() => {
+          setShowEventForm(false);
+          setSelectedEvent(null);
+        }}
+        onSave={handleSaveEvent}
+        onDelete={handleDeleteEvent}
+        event={selectedEvent}
+        date={date}
+        theme={theme}
+      />
     </SafeAreaView>
   );
 };

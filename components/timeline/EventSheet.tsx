@@ -4,19 +4,14 @@ import { Event, NewEvent } from '@/lib/types/data';
 import { Ionicons } from '@expo/vector-icons';
 import React, { useEffect, useRef, useState } from 'react';
 import {
-  Animated,
-  Dimensions,
-  KeyboardAvoidingView,
-  Modal,
-  Platform,
   ScrollView,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
-  TouchableWithoutFeedback,
   View
 } from 'react-native';
+import BottomSheet, { BottomSheetRefProps } from '../ui/BottomSheet';
 
 interface EventFormSheetProps {
   visible: boolean;
@@ -28,7 +23,6 @@ interface EventFormSheetProps {
   theme: Colors;
 }
 
-const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 export default function EventFormSheet({
   visible,
@@ -39,14 +33,22 @@ export default function EventFormSheet({
   date,
   theme
 }: EventFormSheetProps) {
-  const slideAnim = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
-  const backdropAnim = useRef(new Animated.Value(0)).current;
 
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [startTime, setStartTime] = useState('09:00');
   const [endTime, setEndTime] = useState('10:00');
   const [saving, setSaving] = useState(false);
+
+  const bottomSheetRef = useRef<BottomSheetRefProps | null>(null);
+
+  useEffect(() => {
+    if (visible) {
+      bottomSheetRef.current?.scrollTo(-700);
+    } else {
+      bottomSheetRef.current?.close();
+    }
+  }, [visible])
 
   useEffect(() => {
     if (event) {
@@ -55,7 +57,6 @@ export default function EventFormSheet({
       setStartTime(event.duration.start.toString());
       setEndTime(event.duration.end.toString());
     } else {
-      // Reset form for new event
       setTitle('');
       setDescription('');
       const now = new Date();
@@ -66,38 +67,6 @@ export default function EventFormSheet({
     }
   }, [event]);
 
-  useEffect(() => {
-    if (visible) {
-      console.log('visible')
-      Animated.parallel([
-        Animated.timing(slideAnim, {
-          toValue: -SCREEN_HEIGHT/2,
-          duration: 300,
-          useNativeDriver: true,
-        }),
-        Animated.timing(backdropAnim, {
-          toValue: 1,
-          duration: 300,
-          useNativeDriver: true,
-        }),
-      ]).start();
-    } else {
-      console.log("not visible")
-      Animated.parallel([
-        Animated.timing(slideAnim, {
-          toValue: SCREEN_HEIGHT,
-          duration: 250,
-          useNativeDriver: true,
-        }),
-        Animated.timing(backdropAnim, {
-          toValue: 0,
-          duration: 250,
-          useNativeDriver: true,
-        }),
-      ]).start();
-    }
-  }, [visible]);
-
   const handleSave = async () => {
     if (!title.trim()) return;
 
@@ -106,7 +75,6 @@ export default function EventFormSheet({
       const duration = TimeRange.fromString(startTime, endTime);
       
       if (event) {
-        // Update existing event
         await onSave({
           ...event,
           title: title.trim(),
@@ -114,7 +82,6 @@ export default function EventFormSheet({
           duration,
         });
       } else {
-        // Create new event
         const newEvent: NewEvent = {
           title: title.trim(),
           description: description.trim(),
@@ -158,187 +125,144 @@ export default function EventFormSheet({
   };
 
   return (
-    <Modal
-      visible={visible}
-      transparent
-      animationType="none"
-      onRequestClose={onClose}
+    <BottomSheet
+      ref={bottomSheetRef}
+      handleStyle={{backgroundColor: theme.background}}
+      handleBarColor={theme.textSecondary}
+      snapPoints={[-700, -200]}
+      onClose={onClose}
     >
-      <TouchableWithoutFeedback onPress={onClose}>
-        <Animated.View
-          style={[
-            styles.backdrop,
-            {
-              opacity: backdropAnim,
-            },
-          ]}
-        />
-      </TouchableWithoutFeedback>
-
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        style={styles.keyboardAvoid}
-      >
-        <Animated.View
-          style={[
-            styles.sheet,
-            {
-              backgroundColor: theme.surface,
-              transform: [{ translateY: slideAnim }],
-            },
-          ]}
-        >
-          <View style={styles.header}>
-            <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-              <Ionicons name="close" size={24} color={theme.textSecondary} />
-            </TouchableOpacity>
-            
-            <Text style={[styles.headerTitle, { color: theme.text }]}>
-              {event ? 'Edit Event' : JSON.stringify(slideAnim)}
+      <View>
+        <View style={styles.header}>
+          <TouchableOpacity onPress={onClose} style={styles.closeButton}>
+            <Ionicons name="close" size={24} color={theme.textSecondary} />
+          </TouchableOpacity>
+          
+          <Text style={[styles.headerTitle, { color: theme.text }]}>
+            {event ? 'Edit Event' : 'Create Event'}
+          </Text>
+          
+          <TouchableOpacity
+            onPress={handleSave}
+            style={[styles.saveButton, { opacity: saving ? 0.5 : 1 }]}
+            disabled={saving || !title.trim()}
+          >
+            <Text style={[styles.saveButtonText, { color: theme.primary }]}>
+              Save
             </Text>
-            
-            <TouchableOpacity
-              onPress={handleSave}
-              style={[styles.saveButton, { opacity: saving ? 0.5 : 1 }]}
-              disabled={saving || !title.trim()}
-            >
-              <Text style={[styles.saveButtonText, { color: theme.primary }]}>
-                Save
-              </Text>
-            </TouchableOpacity>
+          </TouchableOpacity>
+        </View>
+
+        <ScrollView
+          style={styles.form}
+          contentContainerStyle={styles.formContent}
+          keyboardShouldPersistTaps="handled"
+        >
+          <View style={styles.inputGroup}>
+            <Text style={[styles.label, { color: theme.textSecondary }]}>Title</Text>
+            <TextInput
+              style={[styles.input, { 
+                color: theme.text,
+                backgroundColor: theme.background,
+                borderColor: theme.border
+              }]}
+              value={title}
+              onChangeText={setTitle}
+              placeholder="Event title"
+              placeholderTextColor={theme.textSecondary}
+              autoFocus={!event}
+            />
           </View>
 
-          <ScrollView
-            style={styles.form}
-            contentContainerStyle={styles.formContent}
-            keyboardShouldPersistTaps="handled"
-          >
-            <View style={styles.inputGroup}>
-              <Text style={[styles.label, { color: theme.textSecondary }]}>Title</Text>
+          <View style={styles.inputGroup}>
+            <Text style={[styles.label, { color: theme.textSecondary }]}>Description</Text>
+            <TextInput
+              style={[styles.input, styles.textArea, { 
+                color: theme.text,
+                backgroundColor: theme.background,
+                borderColor: theme.border
+              }]}
+              value={description}
+              onChangeText={setDescription}
+              placeholder="Add description (optional)"
+              placeholderTextColor={theme.textSecondary}
+              multiline
+              numberOfLines={3}
+            />
+          </View>
+
+          <View style={styles.timeRow}>
+            <View style={[styles.inputGroup, { flex: 1 }]}>
+              <Text style={[styles.label, { color: theme.textSecondary }]}>Start</Text>
               <TextInput
                 style={[styles.input, { 
                   color: theme.text,
                   backgroundColor: theme.background,
                   borderColor: theme.border
                 }]}
-                value={title}
-                onChangeText={setTitle}
-                placeholder="Event title"
+                value={startTime}
+                onChangeText={setStartTime}
+                onBlur={() => setStartTime(validateTime(startTime))}
+                placeholder="00:00"
                 placeholderTextColor={theme.textSecondary}
-                autoFocus={!event}
+                keyboardType="numbers-and-punctuation"
               />
             </View>
 
-            <View style={styles.inputGroup}>
-              <Text style={[styles.label, { color: theme.textSecondary }]}>Description</Text>
+
+            <View style={styles.timeSeparator}>
+              <Ionicons name="arrow-forward" size={20} color={theme.textSecondary} />
+            </View>
+
+            <View style={[styles.inputGroup, { flex: 1 }]}>
+              <Text style={[styles.label, { color: theme.textSecondary }]}>End</Text>
               <TextInput
-                style={[styles.input, styles.textArea, { 
+                style={[styles.input, { 
                   color: theme.text,
                   backgroundColor: theme.background,
                   borderColor: theme.border
                 }]}
-                value={description}
-                onChangeText={setDescription}
-                placeholder="Add description (optional)"
+                value={endTime}
+                onChangeText={setEndTime}
+                onBlur={() => setEndTime(validateTime(endTime))}
+                placeholder="00:00"
                 placeholderTextColor={theme.textSecondary}
-                multiline
-                numberOfLines={3}
+                keyboardType="numbers-and-punctuation"
               />
             </View>
+          </View>
 
-            <View style={styles.timeRow}>
-              <View style={[styles.inputGroup, { flex: 1 }]}>
-                <Text style={[styles.label, { color: theme.textSecondary }]}>Start</Text>
-                <TextInput
-                  style={[styles.input, { 
-                    color: theme.text,
-                    backgroundColor: theme.background,
-                    borderColor: theme.border
-                  }]}
-                  value={startTime}
-                  onChangeText={setStartTime}
-                  onBlur={() => setStartTime(validateTime(startTime))}
-                  placeholder="00:00"
-                  placeholderTextColor={theme.textSecondary}
-                  keyboardType="numbers-and-punctuation"
-                />
-              </View>
+          <View style={styles.dateInfo}>
+            <Ionicons name="calendar-outline" size={18} color={theme.textSecondary} />
+            <Text style={[styles.dateText, { color: theme.textSecondary }]}>
+              {date.toDateObject().toLocaleDateString('en-US', {
+                weekday: 'long',
+                month: 'long',
+                day: 'numeric',
+                year: 'numeric'
+              })}
+            </Text>
+          </View>
 
-              <View style={styles.timeSeparator}>
-                <Ionicons name="arrow-forward" size={20} color={theme.textSecondary} />
-              </View>
-
-              <View style={[styles.inputGroup, { flex: 1 }]}>
-                <Text style={[styles.label, { color: theme.textSecondary }]}>End</Text>
-                <TextInput
-                  style={[styles.input, { 
-                    color: theme.text,
-                    backgroundColor: theme.background,
-                    borderColor: theme.border
-                  }]}
-                  value={endTime}
-                  onChangeText={setEndTime}
-                  onBlur={() => setEndTime(validateTime(endTime))}
-                  placeholder="00:00"
-                  placeholderTextColor={theme.textSecondary}
-                  keyboardType="numbers-and-punctuation"
-                />
-              </View>
-            </View>
-
-            <View style={styles.dateInfo}>
-              <Ionicons name="calendar-outline" size={18} color={theme.textSecondary} />
-              <Text style={[styles.dateText, { color: theme.textSecondary }]}>
-                {date.toDateObject().toLocaleDateString('en-US', {
-                  weekday: 'long',
-                  month: 'long',
-                  day: 'numeric',
-                  year: 'numeric'
-                })}
+          {event && onDelete && (
+            <TouchableOpacity
+              style={[styles.deleteButton, { borderColor: theme.red }]}
+              onPress={handleDelete}
+              disabled={saving}
+            >
+              <Ionicons name="trash-outline" size={20} color={theme.red} />
+              <Text style={[styles.deleteButtonText, { color: theme.red }]}>
+                Delete Event
               </Text>
-            </View>
-
-            {event && onDelete && (
-              <TouchableOpacity
-                style={[styles.deleteButton, { borderColor: theme.red }]}
-                onPress={handleDelete}
-                disabled={saving}
-              >
-                <Ionicons name="trash-outline" size={20} color={theme.red} />
-                <Text style={[styles.deleteButtonText, { color: theme.red }]}>
-                  Delete Event
-                </Text>
-              </TouchableOpacity>
-            )}
-          </ScrollView>
-        </Animated.View>
-      </KeyboardAvoidingView>
-    </Modal>
+            </TouchableOpacity>
+          )}
+        </ScrollView>
+      </View>
+    </BottomSheet>
   );
 }
 
 const styles = StyleSheet.create({
-  backdrop: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-  },
-  keyboardAvoid: {
-    flex: 1,
-    justifyContent: 'flex-end',
-  },
-  sheet: {
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    maxHeight: SCREEN_HEIGHT * 0.9,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: -2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 10,
-    elevation: 10,
-  },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -363,15 +287,12 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   form: {
-    flex: 1,
     paddingHorizontal: 16,
-    paddingVertical: 100,
     borderBottomWidth: 1,
     borderBottomColor: 'rgba(0,0,0,0.1)'
   },
   formContent: {
-    padding: 20,
-    paddingBottom: 40,
+    padding: 10,
   },
   inputGroup: {
     marginBottom: 20,
@@ -408,7 +329,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     borderRadius: 10,
     backgroundColor: 'rgba(0,0,0,0.03)',
-    marginBottom: 20,
+    marginBottom: 5,
   },
   dateText: {
     fontSize: 14,

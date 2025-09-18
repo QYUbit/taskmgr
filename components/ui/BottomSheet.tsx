@@ -1,7 +1,8 @@
 import React, { forwardRef, useCallback, useEffect, useImperativeHandle, useState } from 'react';
 import { Dimensions, Keyboard, StyleSheet, View, ViewStyle } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
-import Animated, { Extrapolation, interpolate, runOnJS, useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
+import Animated, { Extrapolation, interpolate, useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
+import { scheduleOnRN } from 'react-native-worklets';
 import AnimatedBackDrop from './BackDrop';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
@@ -115,11 +116,11 @@ const BottomSheet = forwardRef<BottomSheetRefProps, Props>(({
       if (!canClose) {
         active.value = true;
       }
-      if (onSnap) runOnJS(onSnap)(closestSnapPoint);
+      if (onSnap) scheduleOnRN(() => onSnap(closestSnapPoint));
     } else {
       translateY.value = withSpring(canClose? 30: -30);
       active.value = false;
-      if (onClose) runOnJS(onClose)();
+      if (onClose) scheduleOnRN(() => onClose());
     }
   });
   

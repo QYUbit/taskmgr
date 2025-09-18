@@ -7,7 +7,7 @@ import { Event, NewEvent } from "@/lib/types/data";
 import { TimelineItem } from "@/lib/types/ui";
 import { useFocusEffect } from "expo-router";
 import React, { useCallback, useRef, useState } from "react";
-import { SafeAreaView, ScrollView, StyleSheet, Text, View, ViewStyle } from "react-native";
+import { ScrollView, StyleSheet, Text, View, ViewStyle } from "react-native";
 import FloatingActionButton from "../ui/AddButton";
 import Spinner from "../ui/Spinner";
 import EventCard from "./EventCard";
@@ -29,9 +29,9 @@ export default function DayView({ date, onEventPress}: DayViewProps) {
   const [showEventForm, setShowEventForm] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
 
-  const isToday = date.equals(CalendarDate.fromDateObject(new Date()))
+  const isToday = date.equals(CalendarDate.fromDateObject(new Date()));
 
-  const scrollViewRef = useRef<ScrollView | null>(null)
+  const scrollViewRef = useRef<ScrollView | null>(null);
 
   const dayString = date.toDateObject().toLocaleDateString('en-US', { 
     weekday: 'long', 
@@ -54,7 +54,7 @@ export default function DayView({ date, onEventPress}: DayViewProps) {
   const handleEventPress = (event: TimelineItem) => {
     // Check if this is a real event (not a ghost event)
     if (!event.isGhost) {
-      setSelectedEvent(event as unknown as Event);
+      setSelectedEvent(event as any);
       setShowEventForm(true);
     }
     onEventPress?.(event);
@@ -86,7 +86,7 @@ export default function DayView({ date, onEventPress}: DayViewProps) {
   }
   
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
+    <View style={[styles.container, { backgroundColor: theme.background }]}>
       <View style={[styles.header, { backgroundColor: theme.surface, borderBottomColor: theme.border }]}>
         <View style={styles.headerContent}>
           <Text style={[styles.dateText, { color: theme.text }]}>
@@ -136,7 +136,7 @@ export default function DayView({ date, onEventPress}: DayViewProps) {
       </ScrollView>
       
       <FloatingActionButton
-        onPress={handleCreateEvent}
+        onPress={() => handleCreateEvent()}
         theme={theme}
         visible={!showEventForm}
       />
@@ -153,7 +153,7 @@ export default function DayView({ date, onEventPress}: DayViewProps) {
         date={date}
         theme={theme}
       />
-    </SafeAreaView>
+    </View>
   );
 };
 

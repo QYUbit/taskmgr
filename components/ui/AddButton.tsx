@@ -3,13 +3,13 @@ import { Ionicons } from '@expo/vector-icons';
 import React, { useRef } from 'react';
 import { Animated, StyleSheet, TouchableOpacity } from 'react-native';
 
-interface FloatingActionButtonProps {
+interface EpicButtonProps {
   onPress: () => void;
   theme: Colors;
   visible?: boolean;
 }
 
-export default function FloatingActionButton({ onPress, theme, visible = true }: FloatingActionButtonProps) {
+export default function EpicButton({ onPress, theme, visible = true }: EpicButtonProps) {
   const scaleAnim = useRef(new Animated.Value(visible ? 1 : 0)).current;
   const rotateAnim = useRef(new Animated.Value(0)).current;
 

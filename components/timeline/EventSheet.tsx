@@ -1,7 +1,8 @@
 import { Colors } from '@/constants/colors';
-import { CalendarDate, TimeRange } from '@/lib/data/time';
+import { CalendarDate, DayTime, TimeRange } from '@/lib/data/time';
 import { Event, NewEvent } from '@/lib/types/data';
 import { Ionicons } from '@expo/vector-icons';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import React, { useEffect, useRef, useState } from 'react';
 import {
   ScrollView,
@@ -23,7 +24,6 @@ interface EventFormSheetProps {
   theme: Colors;
 }
 
-
 export default function EventFormSheet({
   visible,
   onClose,
@@ -36,15 +36,24 @@ export default function EventFormSheet({
 
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [startTime, setStartTime] = useState('09:00');
-  const [endTime, setEndTime] = useState('10:00');
+  const [startTime, setStartTime] = useState(new DayTime(9, 0));
+  const [endTime, setEndTime] = useState(new DayTime(10, 0));
+  const [eventDate, setEventDate] = useState(date);
+
   const [saving, setSaving] = useState(false);
+  const [endTimeSelect, setEndTimeSelect] = useState(false);
+  const [startTimeSelect, setStartTimeSelect] = useState(false);
+  const [dateSelect, setDateSelect] = useState(false);
 
   const bottomSheetRef = useRef<BottomSheetRefProps | null>(null);
 
   useEffect(() => {
     if (visible) {
-      bottomSheetRef.current?.scrollTo(-700);
+      if (event) {
+        bottomSheetRef.current?.scrollTo(-750);
+      } else {
+        bottomSheetRef.current?.scrollTo(-690);
+      }
     } else {
       bottomSheetRef.current?.close();
     }
@@ -54,16 +63,17 @@ export default function EventFormSheet({
     if (event) {
       setTitle(event.title);
       setDescription(event.description || '');
-      setStartTime(event.duration.start.toString());
-      setEndTime(event.duration.end.toString());
+      setStartTime(event.duration.start);
+      setEndTime(event.duration.end);
+      setEventDate(event.date)
     } else {
       setTitle('');
       setDescription('');
       const now = new Date();
       const currentHour = now.getHours();
       const nextHour = (currentHour + 1) % 24;
-      setStartTime(`${String(currentHour).padStart(2, '0')}:00`);
-      setEndTime(`${String(nextHour).padStart(2, '0')}:00`);
+      setStartTime(new DayTime(currentHour, 0));
+      setEndTime(new DayTime(nextHour, 0));
     }
   }, [event]);
 
@@ -72,21 +82,22 @@ export default function EventFormSheet({
 
     setSaving(true);
     try {
-      const duration = TimeRange.fromString(startTime, endTime);
+      const duration = new TimeRange(startTime, endTime);
       
       if (event) {
         await onSave({
           ...event,
           title: title.trim(),
           description: description.trim(),
+          date: eventDate,
           duration,
         });
       } else {
         const newEvent: NewEvent = {
           title: title.trim(),
           description: description.trim(),
+          date: eventDate,
           duration,
-          date,
           sourceType: 'manual',
           isDismissed: false,
         };
@@ -98,6 +109,21 @@ export default function EventFormSheet({
     } finally {
       setSaving(false);
     }
+  };
+
+  const handleTimeChange = (selected?: Date, type: 'start' | 'end' = 'start') => {
+    if (type === 'start') {
+      if (selected) setStartTime(DayTime.fromDateObject(selected));
+      setStartTimeSelect(false);
+    } else {
+      if (selected) setEndTime(DayTime.fromDateObject(selected));
+      setEndTimeSelect(false);
+    }
+  };
+
+  const handleSetDate = (selected?: Date) => {
+    if (selected) setEventDate(CalendarDate.fromDateObject(selected));
+    setDateSelect(false);
   };
 
   const handleDelete = async () => {
@@ -114,22 +140,12 @@ export default function EventFormSheet({
     }
   };
 
-  const validateTime = (time: string): string => {
-    const parts = time.split(':');
-    if (parts.length !== 2) return '00:00';
-    
-    const hours = Math.max(0, Math.min(23, parseInt(parts[0]) || 0));
-    const minutes = Math.max(0, Math.min(59, parseInt(parts[1]) || 0));
-    
-    return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
-  };
-
   return (
     <BottomSheet
       ref={bottomSheetRef}
       handleStyle={{backgroundColor: theme.background}}
       handleBarColor={theme.textSecondary}
-      snapPoints={[-700, -200]}
+      snapPoints={event? [-750, -300] : [-690, -300]}
       onClose={onClose}
     >
       <View>
@@ -194,55 +210,62 @@ export default function EventFormSheet({
           <View style={styles.timeRow}>
             <View style={[styles.inputGroup, { flex: 1 }]}>
               <Text style={[styles.label, { color: theme.textSecondary }]}>Start</Text>
-              <TextInput
-                style={[styles.input, { 
-                  color: theme.text,
-                  backgroundColor: theme.background,
-                  borderColor: theme.border
-                }]}
-                value={startTime}
-                onChangeText={setStartTime}
-                onBlur={() => setStartTime(validateTime(startTime))}
-                placeholder="00:00"
-                placeholderTextColor={theme.textSecondary}
-                keyboardType="numbers-and-punctuation"
-              />
+              <TouchableOpacity onPress={() => setStartTimeSelect(true)} activeOpacity={0.8}>
+                <View style={[styles.fakeInputContainer, {backgroundColor: theme.background, borderColor: theme.border}]}>
+                  <Text style={{color: theme.text, fontSize: 15}}>{startTime.toString()}</Text>
+                </View>
+              </TouchableOpacity>
             </View>
 
-
             <View style={styles.timeSeparator}>
-              <Ionicons name="arrow-forward" size={20} color={theme.textSecondary} />
+              <Ionicons name="arrow-forward" size={20} color={theme.background} />
             </View>
 
             <View style={[styles.inputGroup, { flex: 1 }]}>
               <Text style={[styles.label, { color: theme.textSecondary }]}>End</Text>
-              <TextInput
-                style={[styles.input, { 
-                  color: theme.text,
-                  backgroundColor: theme.background,
-                  borderColor: theme.border
-                }]}
-                value={endTime}
-                onChangeText={setEndTime}
-                onBlur={() => setEndTime(validateTime(endTime))}
-                placeholder="00:00"
-                placeholderTextColor={theme.textSecondary}
-                keyboardType="numbers-and-punctuation"
-              />
+              <TouchableOpacity onPress={() => setEndTimeSelect(true)} activeOpacity={0.8}>
+                <View style={[styles.fakeInputContainer, {backgroundColor: theme.background, borderColor: theme.border}]}>
+                  <Text style={{color: theme.text, fontSize: 15}}>{endTime.toString()}</Text>
+                </View>
+              </TouchableOpacity>
             </View>
           </View>
 
-          <View style={styles.dateInfo}>
-            <Ionicons name="calendar-outline" size={18} color={theme.textSecondary} />
-            <Text style={[styles.dateText, { color: theme.textSecondary }]}>
-              {date.toDateObject().toLocaleDateString('en-US', {
-                weekday: 'long',
-                month: 'long',
-                day: 'numeric',
-                year: 'numeric'
-              })}
-            </Text>
+          <View style={[styles.inputGroup, { flex: 1 }]}>
+            <Text style={[styles.label, { color: theme.textSecondary }]}>Date</Text>
+            <TouchableOpacity onPress={() => setDateSelect(true)} activeOpacity={0.8}>
+              <View style={[styles.fakeInputContainer, {backgroundColor: theme.background, borderColor: theme.border}]}>
+                <Text style={{color: theme.text, fontSize: 15}}>{eventDate.toString()}</Text>
+              </View>
+            </TouchableOpacity>
           </View>
+
+          {startTimeSelect && (
+            <DateTimePicker
+              value={startTime.toDateObject()}
+              mode="time"
+              display="clock"
+              onChange={(_, selected) => handleTimeChange(selected, 'start')}
+            />
+          )}
+
+          {endTimeSelect && (
+            <DateTimePicker
+              value={endTime.toDateObject()}
+              mode="time"
+              display="clock"
+              onChange={(_, selected) => handleTimeChange(selected, 'end')}
+            />
+          )}
+
+          {dateSelect && (
+            <DateTimePicker
+              value={eventDate.toDateObject()}
+              mode="date"
+              display="calendar"
+              onChange={(_, selected) => handleSetDate(selected)}
+            />
+          )}
 
           {event && onDelete && (
             <TouchableOpacity
@@ -348,5 +371,10 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '500',
     marginLeft: 8,
+  },
+  fakeInputContainer: {
+    borderWidth: 1,
+    borderRadius: 10,
+    padding: 10,
   },
 });

@@ -82,9 +82,19 @@ export class DayTime {
         this.minute = minute;
     }
 
+    static fromDateObject(date: Date): DayTime {
+        return new DayTime(date.getHours(), date.getMinutes())
+    }
+
     static fromString(str: string): DayTime {
         const [hours, minutes] = str.split(":")
         return new DayTime(parseInt(hours), parseInt(minutes))
+    }
+
+    toDateObject(): Date {
+        const date = new Date()
+        date.setHours(this.hour, this.minute)
+        return date
     }
 
     toString(): string {

@@ -52,7 +52,6 @@ export default function DayView({ date, onEventPress}: DayViewProps) {
   )
 
   const handleEventPress = (event: TimelineItem) => {
-    // Check if this is a real event (not a ghost event)
     if (!event.isGhost) {
       setSelectedEvent(event as any);
       setShowEventForm(true);
@@ -67,10 +66,8 @@ export default function DayView({ date, onEventPress}: DayViewProps) {
 
   const handleSaveEvent = async (eventData: NewEvent | Partial<Event>) => {
     if ('id' in eventData) {
-      // Update existing event
       await updateEvent(eventData.id || '', eventData);
     } else {
-      // Create new event
       await createEvent(eventData as NewEvent);
     }
     await refetch();

@@ -45,7 +45,11 @@ export default function EventFormSheet({
   const [startTimeSelect, setStartTimeSelect] = useState(false);
   const [dateSelect, setDateSelect] = useState(false);
 
-  const bottomSheetRef = useRef<BottomSheetRefProps | null>(null);
+  const bottomSheetRef = useRef<BottomSheetRefProps>(null);
+  const [isOpen, setIsOpen] = useState(false);
+
+  const titleInputRef = useRef<TextInput>(null);
+  const descriptionInputRef = useRef<TextInput>(null);
 
   useEffect(() => {
     if (visible) {
@@ -54,18 +58,23 @@ export default function EventFormSheet({
       } else {
         bottomSheetRef.current?.scrollTo(-690);
       }
+      setIsOpen(true)
+
+      if (!event) {
+        titleInputRef.current?.focus();
+      }
     } else {
-      bottomSheetRef.current?.close();
+      handleClose();
     }
   }, [visible])
 
   useEffect(() => {
     if (event) {
       setTitle(event.title);
-      setDescription(event.description || '');
+      setDescription(event.description);
       setStartTime(event.duration.start);
       setEndTime(event.duration.end);
-      setEventDate(event.date)
+      setEventDate(event.date);
     } else {
       setTitle('');
       setDescription('');
@@ -76,6 +85,12 @@ export default function EventFormSheet({
       setEndTime(new DayTime(nextHour, 0));
     }
   }, [event]);
+
+  const handleClose = () => {
+    titleInputRef.current?.blur();
+    descriptionInputRef.current?.blur();
+    if (isOpen) bottomSheetRef.current?.close();
+  }
 
   const handleSave = async () => {
     if (!title.trim()) return;
@@ -146,7 +161,12 @@ export default function EventFormSheet({
       handleStyle={{backgroundColor: theme.background}}
       handleBarColor={theme.textSecondary}
       snapPoints={event? [-750, -300] : [-690, -300]}
+      avoidKeyboard={false}
       onClose={onClose}
+      onSnap={() => {
+        titleInputRef.current?.blur();
+        descriptionInputRef.current?.blur();
+      }}
     >
       <View>
         <View style={styles.header}>
@@ -186,7 +206,7 @@ export default function EventFormSheet({
               onChangeText={setTitle}
               placeholder="Event title"
               placeholderTextColor={theme.textSecondary}
-              autoFocus={!event}
+              ref={titleInputRef}
             />
           </View>
 
@@ -204,6 +224,7 @@ export default function EventFormSheet({
               placeholderTextColor={theme.textSecondary}
               multiline
               numberOfLines={3}
+              ref={descriptionInputRef}
             />
           </View>
 
@@ -246,6 +267,7 @@ export default function EventFormSheet({
               mode="time"
               display="clock"
               onChange={(_, selected) => handleTimeChange(selected, 'start')}
+              style={{backgroundColor: theme.background}}
             />
           )}
 

@@ -116,11 +116,11 @@ const BottomSheet = forwardRef<BottomSheetRefProps, Props>(({
       if (!canClose) {
         active.value = true;
       }
-      if (onSnap) scheduleOnRN(() => onSnap(closestSnapPoint));
+      if (onSnap) scheduleOnRN(onSnap, closestSnapPoint);
     } else {
       translateY.value = withSpring(canClose? 30: -30);
       active.value = false;
-      if (onClose) scheduleOnRN(() => onClose());
+      if (onClose) scheduleOnRN(onClose);
     }
   });
   

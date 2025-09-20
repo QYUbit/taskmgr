@@ -68,7 +68,7 @@ export class DBService {
 
     await this.db.runAsync(
       `INSERT INTO todos (id, title, description, repeatOn, isTemplate, dateStart, dateEnd, timeStart, timeEnd, createdAt, updatedAt)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         id,
         data.title,

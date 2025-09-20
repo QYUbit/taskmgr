@@ -17,7 +17,7 @@ const daysToLetters = (days: number[]) => {
 export default function TodoCard({ todo, onPress, theme }: TodoCardProps) {
   return (
     <TouchableOpacity style={[styles.container, { backgroundColor: theme.primary }]} onPress={onPress}>
-      <Text style={[styles.text, { color: theme.text }]}>{todo.title}</Text>
+      <Text style={[styles.text, { color: theme.lightText }]}>{todo.title}</Text>
       {
         todo.isTemplate ? (
           <Text style={[styles.detailsText, { color: theme.textSecondary }]}>

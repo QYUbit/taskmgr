@@ -47,9 +47,10 @@ export default function DayView({ date, onEventPress}: DayViewProps) {
 
   useFocusEffect(
     useCallback(() => {
-      if (isToday) scrollViewRef.current?.scrollTo({ y: getCurrentTimePosition() })
+      refetch();
+      if (isToday) scrollViewRef.current?.scrollTo({ y: getCurrentTimePosition() });
     }, [isToday])
-  )
+  );
 
   const handleEventPress = (event: TimelineItem) => {
     if (!event.isGhost) {

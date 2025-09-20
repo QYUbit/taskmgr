@@ -1,8 +1,5 @@
 # Bugs
 
-- timeline won't sync with todo changes
-- navigate to current timeline/calendar using tab buttons
-
 # Next
 
 - event generation
@@ -10,6 +7,7 @@
 - implement settings
 - timeline/calendar swipe
 - ghost actions
+- timeline design lines
 
 # Features
 
@@ -23,3 +21,4 @@
 - cleaner sheets
 - cleaner db?
 - more logs?
+- cleaner state handling (context)

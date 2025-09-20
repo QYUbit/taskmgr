@@ -8,7 +8,7 @@ export interface TodoCardProps {
   theme: Colors;
 }
 
-const letters = ['M', 'T', 'W', 'T', 'F', 'S', 'S']
+const letters = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
 
 const daysToLetters = (days: number[]) => {
   return days.map(day => letters[day]).join(' ');

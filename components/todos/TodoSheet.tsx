@@ -16,6 +16,8 @@ export interface TodoSheetProps {
   onDelete?: (id: string) => Promise<void>;
 }
 
+const letters = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+
 export default function TodoSheet({
   todo,
   visible,
@@ -38,6 +40,7 @@ export default function TodoSheet({
   const [endTimeSelect, setEndTimeSelect] = useState(false);
   const [startDateSelect, setStartDateSelect] = useState(false);
   const [endDateSelect, setEndDateSelect] = useState(false);
+  const [tab, setTab] = useState<'general' | 'schedule' | 'alarm'>('general');
 
   const bottomSheetRef = useRef<BottomSheetRefProps>(null);
   const titleInputRef = useRef<TextInput>(null);
@@ -45,14 +48,12 @@ export default function TodoSheet({
 
   useEffect(() => {
     if (visible) {
-      if (todo) {
-        bottomSheetRef.current?.scrollTo(-750);
-      } else {
-        bottomSheetRef.current?.scrollTo(-690);
-      }
+      bottomSheetRef.current?.scrollTo(-600);
+
+      setTab('general');
 
       if (!todo) {
-        titleInputRef.current?.focus();
+        setTimeout(() => titleInputRef.current?.focus(), 100);
       }
     } else {
       handleClose();
@@ -158,12 +159,18 @@ export default function TodoSheet({
     }
   };
 
+  const handleTabChange = (newTab: 'general' | 'schedule' | 'alarm') => {
+    titleInputRef.current?.blur();
+    descriptionInputRef.current?.blur();
+    setTab(newTab);
+  };
+
   return (
     <BottomSheet
       ref={bottomSheetRef}
       handleStyle={{backgroundColor: theme.background}}
       handleBarColor={theme.textSecondary}
-      snapPoints={todo? [-750, -300] : [-690, -300]}
+      snapPoints={[-600, -300]}
       avoidKeyboard={false}
       onClose={onClose}
       onSnap={() => {
@@ -177,9 +184,32 @@ export default function TodoSheet({
             <Ionicons name="close" size={24} color={theme.textSecondary} />
           </TouchableOpacity>
           
-          <Text style={[styles.headerTitle, { color: theme.text }]}>
-            {todo ? 'Edit Task' : 'Create Task'}
-          </Text>
+          <View style={[styles.tabBubbles, {backgroundColor: theme.surface}]}>
+            <TouchableOpacity
+              onPress={() => handleTabChange('general')}
+              style={[styles.tabBubble, {backgroundColor: tab === 'general' ? theme.secondary : undefined}]}
+            >
+              <Text style={{fontSize: 15, color: theme.lightText}}>
+                General
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => handleTabChange('schedule')}
+              style={[styles.tabBubble, {backgroundColor: tab === 'schedule' ? theme.secondary : undefined}]}
+            >
+              <Text style={{fontSize: 15, color: theme.lightText}}>
+                Schedule
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => handleTabChange('alarm')}
+              style={[styles.tabBubble, {backgroundColor: tab === 'alarm' ? theme.secondary : undefined}]}
+            >
+              <Text style={{fontSize: 15, color: theme.lightText}}>
+                Alarm
+              </Text>
+            </TouchableOpacity>
+          </View>
           
           <TouchableOpacity
             onPress={handleSave}
@@ -192,7 +222,9 @@ export default function TodoSheet({
           </TouchableOpacity>
         </View>
       </View>
-      <ScrollView
+
+      {tab === 'general' && (
+        <ScrollView
           style={styles.form}
           contentContainerStyle={styles.formContent}
           keyboardShouldPersistTaps="handled"
@@ -231,6 +263,27 @@ export default function TodoSheet({
             />
           </View>
 
+          {todo && onDelete && (
+            <TouchableOpacity
+              style={[styles.deleteButton, { borderColor: theme.red }]}
+              onPress={handleDelete}
+              disabled={saving}
+            >
+              <Ionicons name="trash-outline" size={20} color={theme.red} />
+              <Text style={[styles.deleteButtonText, { color: theme.red }]}>
+                Delete Task
+              </Text>
+            </TouchableOpacity>
+          )}
+        </ScrollView>
+      )}
+
+      {tab === 'schedule' && (
+        <ScrollView
+          style={styles.form}
+          contentContainerStyle={styles.formContent}
+          keyboardShouldPersistTaps="handled"
+        >
           <View style={styles.timeRow}>
             <View style={[styles.inputGroup, { flex: 1 }]}>
               <Text style={[styles.label, { color: theme.textSecondary }]}>Start</Text>
@@ -279,56 +332,69 @@ export default function TodoSheet({
             </View>
           </View>
 
-          {startTimeSelect && (
-            <DateTimePicker
-              value={startTime.toDateObject()}
-              mode="time"
-              display="clock"
-              onChange={(_, selected) => handleTimeChange(selected, 'start')}
-              style={{backgroundColor: theme.background}}
-            />
-          )}
-
-          {endTimeSelect && (
-            <DateTimePicker
-              value={endTime.toDateObject()}
-              mode="time"
-              display="clock"
-              onChange={(_, selected) => handleTimeChange(selected, 'end')}
-            />
-          )}
-
-          {startDateSelect && (
-            <DateTimePicker
-              value={startDate?.toDateObject() ?? new Date()}
-              mode="date"
-              display="calendar"
-              onChange={(_, selected) => handleDateChange(selected, 'start')}
-            />
-          )}
-
-          {endDateSelect && (
-            <DateTimePicker
-              value={endDate?.toDateObject() ?? new Date()}
-              mode="date"
-              display="calendar"
-              onChange={(_, selected) => handleDateChange(selected, 'end')}
-            />
-          )}
-
-          {todo && onDelete && (
-            <TouchableOpacity
-              style={[styles.deleteButton, { borderColor: theme.red }]}
-              onPress={handleDelete}
-              disabled={saving}
-            >
-              <Ionicons name="trash-outline" size={20} color={theme.red} />
-              <Text style={[styles.deleteButtonText, { color: theme.red }]}>
-                Delete Task
-              </Text>
-            </TouchableOpacity>
-          )}
+          <View style={[styles.inputGroup, { flex: 1 }]}>
+            <Text style={[styles.label, { color: theme.textSecondary }]}>Repeat On</Text>
+            <View style={styles.bubbleButtons}>
+              {letters.map((letter, i) => (
+                <TouchableOpacity
+                  key={i}
+                  onPress={() => repeatOn.includes(i) ? setRepeatOn(repeatOn.filter(x => x !== i)) : setRepeatOn([...repeatOn, i])}
+                  style={[styles.bubbleButton, {backgroundColor: repeatOn.includes(i) ? theme.primary : theme.surface}]}
+                >
+                  <Text style={[styles.bubbleText, {color: theme.lightText}]}>{letter}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
         </ScrollView>
+      )}
+
+      {tab === 'alarm' && (
+        <ScrollView
+          style={styles.form}
+          contentContainerStyle={styles.formContent}
+          keyboardShouldPersistTaps="handled"
+        >
+          <Text style={{color: theme.text}}>Comming Soon</Text>
+        </ScrollView>
+      )}
+
+      {startTimeSelect && (
+        <DateTimePicker
+          value={startTime.toDateObject()}
+          mode="time"
+          display="clock"
+          onChange={(_, selected) => handleTimeChange(selected, 'start')}
+          style={{backgroundColor: theme.background}}
+        />
+      )}
+
+      {endTimeSelect && (
+        <DateTimePicker
+          value={endTime.toDateObject()}
+          mode="time"
+          display="clock"
+          onChange={(_, selected) => handleTimeChange(selected, 'end')}
+        />
+      )}
+
+      {startDateSelect && (
+        <DateTimePicker
+          value={startDate?.toDateObject() ?? new Date()}
+          mode="date"
+          display="calendar"
+          onChange={(_, selected) => handleDateChange(selected, 'start')}
+        />
+      )}
+
+      {endDateSelect && (
+        <DateTimePicker
+          value={endDate?.toDateObject() ?? new Date()}
+          mode="date"
+          display="calendar"
+          onChange={(_, selected) => handleDateChange(selected, 'end')}
+        />
+      )}
     </BottomSheet>
   );
 }
@@ -425,4 +491,31 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     padding: 10,
   },
+  tabBubbles: {
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    flexDirection: 'row',
+    borderRadius: 50
+  },
+  tabBubble: {
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 50,
+  },
+  bubbleButtons: {
+    display: 'flex',
+    alignItems: 'baseline',
+    flexDirection: 'row',
+    gap: 7,
+  },
+  bubbleButton: {
+    padding: 6,
+    width: 36,
+    borderRadius: 50
+  },
+  bubbleText: {
+    fontSize: 16,
+    textAlign: 'center',
+  }
 });

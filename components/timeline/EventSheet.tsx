@@ -44,24 +44,24 @@ export default function EventFormSheet({
   const [startTimeSelect, setStartTimeSelect] = useState(false);
   const [endTimeSelect, setEndTimeSelect] = useState(false);
   const [dateSelect, setDateSelect] = useState(false);
+  const [tab, setTab] = useState<'general' | 'schedule' | 'alarm'>('general');
 
-  const bottomSheetRef = useRef<BottomSheetRefProps>(null);
   const [isOpen, setIsOpen] = useState(false);
 
+  const bottomSheetRef = useRef<BottomSheetRefProps>(null);
   const titleInputRef = useRef<TextInput>(null);
   const descriptionInputRef = useRef<TextInput>(null);
 
   useEffect(() => {
     if (visible) {
-      if (event) {
-        bottomSheetRef.current?.scrollTo(-750);
-      } else {
-        bottomSheetRef.current?.scrollTo(-690);
-      }
+      bottomSheetRef.current?.scrollTo(-600);
+      
       setIsOpen(true)
 
+      setTab('general');
+
       if (!event) {
-        titleInputRef.current?.focus();
+        setTimeout(() => titleInputRef.current?.focus(), 100);
       }
     } else {
       handleClose();
@@ -155,12 +155,18 @@ export default function EventFormSheet({
     }
   };
 
+  const handleTabChange = (newTab: 'general' | 'schedule' | 'alarm') => {
+    titleInputRef.current?.blur();
+    descriptionInputRef.current?.blur();
+    setTab(newTab);
+  };
+
   return (
     <BottomSheet
       ref={bottomSheetRef}
       handleStyle={{backgroundColor: theme.background}}
       handleBarColor={theme.textSecondary}
-      snapPoints={event? [-750, -300] : [-690, -300]}
+      snapPoints={[-600, -300]}
       avoidKeyboard={false}
       onClose={onClose}
       onSnap={() => {
@@ -174,9 +180,32 @@ export default function EventFormSheet({
             <Ionicons name="close" size={24} color={theme.textSecondary} />
           </TouchableOpacity>
           
-          <Text style={[styles.headerTitle, { color: theme.text }]}>
-            {event ? 'Edit Event' : 'Create Event'}
-          </Text>
+          <View style={[styles.tabBubbles, {backgroundColor: theme.surface}]}>
+            <TouchableOpacity
+              onPress={() => handleTabChange('general')}
+              style={[styles.tabBubble, {backgroundColor: tab === 'general' ? theme.secondary : undefined}]}
+            >
+              <Text style={{fontSize: 15, color: theme.lightText}}>
+                General
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => handleTabChange('schedule')}
+              style={[styles.tabBubble, {backgroundColor: tab === 'schedule' ? theme.secondary : undefined}]}
+            >
+              <Text style={{fontSize: 15, color: theme.lightText}}>
+                Schedule
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => handleTabChange('alarm')}
+              style={[styles.tabBubble, {backgroundColor: tab === 'alarm' ? theme.secondary : undefined}]}
+            >
+              <Text style={{fontSize: 15, color: theme.lightText}}>
+                Alarm
+              </Text>
+            </TouchableOpacity>
+          </View>
           
           <TouchableOpacity
             onPress={handleSave}
@@ -189,119 +218,139 @@ export default function EventFormSheet({
           </TouchableOpacity>
         </View>
 
-        <ScrollView
-          style={styles.form}
-          contentContainerStyle={styles.formContent}
-          keyboardShouldPersistTaps="handled"
-        >
-          <View style={styles.inputGroup}>
-            <Text style={[styles.label, { color: theme.textSecondary }]}>Title</Text>
-            <TextInput
-              style={[styles.input, { 
-                color: theme.text,
-                backgroundColor: theme.background,
-                borderColor: theme.border
-              }]}
-              value={title}
-              onChangeText={setTitle}
-              placeholder="Event title"
-              placeholderTextColor={theme.textSecondary}
-              ref={titleInputRef}
-            />
-          </View>
+        {tab === 'general' && (
+          <ScrollView
+            style={styles.form}
+            contentContainerStyle={styles.formContent}
+            keyboardShouldPersistTaps="handled"
+          >
+            <View style={styles.inputGroup}>
+              <Text style={[styles.label, { color: theme.textSecondary }]}>Title</Text>
+              <TextInput
+                style={[styles.input, { 
+                  color: theme.text,
+                  backgroundColor: theme.background,
+                  borderColor: theme.border
+                }]}
+                value={title}
+                onChangeText={setTitle}
+                placeholder="Event title"
+                placeholderTextColor={theme.textSecondary}
+                ref={titleInputRef}
+              />
+            </View>
 
-          <View style={styles.inputGroup}>
-            <Text style={[styles.label, { color: theme.textSecondary }]}>Description</Text>
-            <TextInput
-              style={[styles.input, styles.textArea, { 
-                color: theme.text,
-                backgroundColor: theme.background,
-                borderColor: theme.border
-              }]}
-              value={description}
-              onChangeText={setDescription}
-              placeholder="Add description (optional)"
-              placeholderTextColor={theme.textSecondary}
-              multiline
-              numberOfLines={3}
-              ref={descriptionInputRef}
-            />
-          </View>
+            <View style={styles.inputGroup}>
+              <Text style={[styles.label, { color: theme.textSecondary }]}>Description</Text>
+              <TextInput
+                style={[styles.input, styles.textArea, { 
+                  color: theme.text,
+                  backgroundColor: theme.background,
+                  borderColor: theme.border
+                }]}
+                value={description}
+                onChangeText={setDescription}
+                placeholder="Add description (optional)"
+                placeholderTextColor={theme.textSecondary}
+                multiline
+                numberOfLines={3}
+                ref={descriptionInputRef}
+              />
+            </View>
 
-          <View style={styles.timeRow}>
-            <View style={[styles.inputGroup, { flex: 1 }]}>
-              <Text style={[styles.label, { color: theme.textSecondary }]}>Start</Text>
-              <TouchableOpacity onPress={() => setStartTimeSelect(true)} activeOpacity={0.8}>
-                <View style={[styles.fakeInputContainer, {backgroundColor: theme.background, borderColor: theme.border}]}>
-                  <Text style={{color: theme.text, fontSize: 15}}>{startTime.toString()}</Text>
-                </View>
+            {event && onDelete && (
+              <TouchableOpacity
+                style={[styles.deleteButton, { borderColor: theme.red }]}
+                onPress={handleDelete}
+                disabled={saving}
+              >
+                <Ionicons name="trash-outline" size={20} color={theme.red} />
+                <Text style={[styles.deleteButtonText, { color: theme.red }]}>
+                  Delete Event
+                </Text>
               </TouchableOpacity>
-            </View>
+            )}
+          </ScrollView>
+        )}
 
-            <View style={styles.timeSeparator}>
-              <Ionicons name="arrow-forward" size={20} color={theme.background} />
-            </View>
-
-            <View style={[styles.inputGroup, { flex: 1 }]}>
-              <Text style={[styles.label, { color: theme.textSecondary }]}>End</Text>
-              <TouchableOpacity onPress={() => setEndTimeSelect(true)} activeOpacity={0.8}>
-                <View style={[styles.fakeInputContainer, {backgroundColor: theme.background, borderColor: theme.border}]}>
-                  <Text style={{color: theme.text, fontSize: 15}}>{endTime.toString()}</Text>
-                </View>
-              </TouchableOpacity>
-            </View>
-          </View>
-
-          <View style={[styles.inputGroup, { flex: 1 }]}>
-            <Text style={[styles.label, { color: theme.textSecondary }]}>Date</Text>
-            <TouchableOpacity onPress={() => setDateSelect(true)} activeOpacity={0.8}>
-              <View style={[styles.fakeInputContainer, {backgroundColor: theme.background, borderColor: theme.border}]}>
-                <Text style={{color: theme.text, fontSize: 15}}>{eventDate.toString()}</Text>
+        {tab === 'schedule' && (
+          <ScrollView
+            style={styles.form}
+            contentContainerStyle={styles.formContent}
+            keyboardShouldPersistTaps="handled"
+          >
+            <View style={styles.timeRow}>
+              <View style={[styles.inputGroup, { flex: 1 }]}>
+                <Text style={[styles.label, { color: theme.textSecondary }]}>Start</Text>
+                <TouchableOpacity onPress={() => setStartTimeSelect(true)} activeOpacity={0.8}>
+                  <View style={[styles.fakeInputContainer, {backgroundColor: theme.background, borderColor: theme.border}]}>
+                    <Text style={{color: theme.text, fontSize: 15}}>{startTime.toString()}</Text>
+                  </View>
+                </TouchableOpacity>
               </View>
-            </TouchableOpacity>
-          </View>
 
-          {startTimeSelect && (
-            <DateTimePicker
-              value={startTime.toDateObject()}
-              mode="time"
-              display="clock"
-              onChange={(_, selected) => handleTimeChange(selected, 'start')}
-              style={{backgroundColor: theme.background}}
-            />
-          )}
+              <View style={styles.timeSeparator}>
+                <Ionicons name="arrow-forward" size={20} color={theme.background} />
+              </View>
 
-          {endTimeSelect && (
-            <DateTimePicker
-              value={endTime.toDateObject()}
-              mode="time"
-              display="clock"
-              onChange={(_, selected) => handleTimeChange(selected, 'end')}
-            />
-          )}
+              <View style={[styles.inputGroup, { flex: 1 }]}>
+                <Text style={[styles.label, { color: theme.textSecondary }]}>End</Text>
+                <TouchableOpacity onPress={() => setEndTimeSelect(true)} activeOpacity={0.8}>
+                  <View style={[styles.fakeInputContainer, {backgroundColor: theme.background, borderColor: theme.border}]}>
+                    <Text style={{color: theme.text, fontSize: 15}}>{endTime.toString()}</Text>
+                  </View>
+                </TouchableOpacity>
+              </View>
+            </View>
 
-          {dateSelect && (
-            <DateTimePicker
-              value={eventDate.toDateObject()}
-              mode="date"
-              display="calendar"
-              onChange={(_, selected) => handleSetDate(selected)}
-            />
-          )}
+            <View style={[styles.inputGroup, { flex: 1 }]}>
+              <Text style={[styles.label, { color: theme.textSecondary }]}>Date</Text>
+              <TouchableOpacity onPress={() => setDateSelect(true)} activeOpacity={0.8}>
+                <View style={[styles.fakeInputContainer, {backgroundColor: theme.background, borderColor: theme.border}]}>
+                  <Text style={{color: theme.text, fontSize: 15}}>{eventDate.toString()}</Text>
+                </View>
+              </TouchableOpacity>
+            </View>
+          </ScrollView>
+        )}
 
-          {event && onDelete && (
-            <TouchableOpacity
-              style={[styles.deleteButton, { borderColor: theme.red }]}
-              onPress={handleDelete}
-              disabled={saving}
-            >
-              <Ionicons name="trash-outline" size={20} color={theme.red} />
-              <Text style={[styles.deleteButtonText, { color: theme.red }]}>
-                Delete Event
-              </Text>
-            </TouchableOpacity>
-          )}
-        </ScrollView>
+        {tab === 'alarm' && (
+          <ScrollView
+            style={styles.form}
+            contentContainerStyle={styles.formContent}
+            keyboardShouldPersistTaps="handled"
+          >
+            <Text style={{color: theme.text}}>Comming Soon</Text>
+          </ScrollView>
+        )}
+
+        {startTimeSelect && (
+          <DateTimePicker
+            value={startTime.toDateObject()}
+            mode="time"
+            display="clock"
+            onChange={(_, selected) => handleTimeChange(selected, 'start')}
+            style={{backgroundColor: theme.background}}
+          />
+        )}
+
+        {endTimeSelect && (
+          <DateTimePicker
+            value={endTime.toDateObject()}
+            mode="time"
+            display="clock"
+            onChange={(_, selected) => handleTimeChange(selected, 'end')}
+          />
+        )}
+
+        {dateSelect && (
+          <DateTimePicker
+            value={eventDate.toDateObject()}
+            mode="date"
+            display="calendar"
+            onChange={(_, selected) => handleSetDate(selected)}
+          />
+        )}
       </View>
     </BottomSheet>
   );
@@ -398,5 +447,17 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 10,
     padding: 10,
+  },
+  tabBubbles: {
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    flexDirection: 'row',
+    borderRadius: 50
+  },
+  tabBubble: {
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 50,
   },
 });

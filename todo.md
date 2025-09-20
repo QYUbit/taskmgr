@@ -5,8 +5,6 @@
 
 # Next
 
-- finish todo sheet
-- split the sheets
 - event generation
 - event cleanup
 - implement settings

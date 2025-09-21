@@ -1,4 +1,4 @@
-import { CalendarDate, DateRange, TimeRange } from "../data/time"
+import { CalendarDate, DateRange, TimeRange } from "../utils/time"
 
 export interface Todo {
     id: string

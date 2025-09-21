@@ -1,9 +1,9 @@
 # Bugs
 
+- event sheet dateimepicker set bug
+
 # Next
 
-- event generation
-- event cleanup
 - implement settings
 - timeline/calendar swipe
 - ghost actions

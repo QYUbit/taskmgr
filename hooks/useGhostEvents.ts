@@ -1,6 +1,6 @@
-import { generateGhostEventsForDate } from '@/lib/data/ghostEvents';
-import { CalendarDate } from '@/lib/data/time';
 import { GhostEvent } from '@/lib/types/data';
+import { generateGhostEventsForDate } from '@/lib/utils/ghostEvents';
+import { CalendarDate } from '@/lib/utils/time';
 import { useCallback, useEffect, useState } from 'react';
 
 export const useGhostEventsForDate = (date: CalendarDate) => {

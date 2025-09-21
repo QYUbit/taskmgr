@@ -1,6 +1,6 @@
 import { useSettings } from '@/hooks/useSettings';
 import { useTheme } from '@/hooks/useTheme';
-import { CalendarDate } from '@/lib/data/time';
+import { CalendarDate } from '@/lib/utils/time';
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import DayCard from './DayCard';
@@ -79,7 +79,7 @@ export default function MonthView({ year, month, onDayPress }: MonthlyCalendarPr
                   key={dayIndex}
                   day={day}
                   theme={theme}
-                  isHighlighted={new CalendarDate(year, month, day).equals(CalendarDate.fromDateObject(new Date()))}
+                  isHighlighted={new CalendarDate(year, month, day).equals(CalendarDate.current())}
                   onPress={() => onDayPress && onDayPress(day)}
                 />
               ) : (

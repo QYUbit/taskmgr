@@ -1,6 +1,6 @@
-import { CalendarDate } from "@/lib/data/time";
 import { dbService } from "@/lib/db/service";
 import { Event, NewEvent } from "@/lib/types/data";
+import { CalendarDate } from "@/lib/utils/time";
 import { useCallback, useEffect, useState } from "react";
 
 export const useEventsForDate = (date: CalendarDate) => {

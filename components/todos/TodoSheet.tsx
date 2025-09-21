@@ -1,6 +1,6 @@
 import { Colors } from "@/constants/colors";
-import { CalendarDate, DateRange, DayTime, TimeRange } from "@/lib/data/time";
 import { NewTodo, Todo } from "@/lib/types/data";
+import { CalendarDate, DateRange, DayTime, TimeRange } from "@/lib/utils/time";
 import { Ionicons } from "@expo/vector-icons";
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useEffect, useRef, useState } from "react";

@@ -1,6 +1,6 @@
 import DayView from "@/components/timeline/DayView";
-import { CalendarDate } from "@/lib/data/time";
 import { TimelineItem } from "@/lib/types/ui";
+import { CalendarDate } from "@/lib/utils/time";
 import { BottomTabNavigationProp } from "@react-navigation/bottom-tabs";
 import { ParamListBase } from "@react-navigation/native";
 import { useLocalSearchParams, useNavigation } from "expo-router";
@@ -14,14 +14,14 @@ export default function DayScreen() {
   const date = useMemo(
     () => dateParam
     ? CalendarDate.fromString(dateParam)
-    : CalendarDate.fromDateObject(new Date()),
+    : CalendarDate.current(),
     [dateParam]
   );
 
   useEffect(() => {
     const unsubscribe = navigation.addListener("tabPress", () => {
       if (navigation.isFocused()) {
-        const today = CalendarDate.fromDateObject(new Date());
+        const today = CalendarDate.current();
         navigation.setParams({ date: today.toString() });
       }
     });

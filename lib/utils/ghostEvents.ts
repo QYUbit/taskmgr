@@ -1,7 +1,7 @@
 import { dbService } from "../db/service";
 import { GhostEvent, Todo } from "../types/data";
-import { CalendarDate } from "./time";
-import { todoAppliesToDate } from "./todo";
+import { CalendarDate } from "../utils/time";
+import { todoAppliesToDate } from "./todos";
 
 export async function generateGhostEventsForDate(date: CalendarDate): Promise<GhostEvent[]> {
     const todos = await dbService.getAllTodos();    

@@ -2,9 +2,9 @@ import { useEventOperations } from "@/hooks/useEvents";
 import { useSettings } from "@/hooks/useSettings";
 import { useTheme } from "@/hooks/useTheme";
 import { useTimeline } from "@/hooks/useTimeline";
-import { CalendarDate } from "@/lib/data/time";
 import { Event, NewEvent } from "@/lib/types/data";
 import { TimelineItem } from "@/lib/types/ui";
+import { CalendarDate } from "@/lib/utils/time";
 import { useFocusEffect } from "expo-router";
 import React, { useCallback, useRef, useState } from "react";
 import { ScrollView, StyleSheet, Text, View, ViewStyle } from "react-native";
@@ -29,7 +29,7 @@ export default function DayView({ date, onEventPress}: DayViewProps) {
   const [showEventForm, setShowEventForm] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
 
-  const isToday = date.equals(CalendarDate.fromDateObject(new Date()));
+  const isToday = date.equals(CalendarDate.current());
 
   const scrollViewRef = useRef<ScrollView | null>(null);
 

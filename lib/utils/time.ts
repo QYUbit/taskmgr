@@ -9,6 +9,15 @@ export class CalendarDate {
         this.day = day;
     }
 
+    static current(): CalendarDate {
+        const date = new Date();
+        return new CalendarDate(
+            date.getFullYear(),
+            date.getMonth() + 1,
+            date.getDate()
+        );
+    }
+
     static fromDateObject(date: Date): CalendarDate {
         return new CalendarDate(
             date.getFullYear(),
@@ -32,8 +41,8 @@ export class CalendarDate {
     }
 
     toDateObject(): Date {
-    return new Date(this.year, this.month - 1, this.day);
-}
+        return new Date(this.year, this.month - 1, this.day);
+    }
 
     toString(): string {
         return `${this.year}-${String(this.month).padStart(2, '0')}-${String(this.day).padStart(2, '0')}`;

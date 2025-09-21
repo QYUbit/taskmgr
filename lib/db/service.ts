@@ -1,7 +1,7 @@
 import * as SQLite from 'expo-sqlite';
-import { CalendarDate, DateRange, TimeRange } from '../data/time';
 import { Event, NewEvent, NewTodo, Todo } from '../types/data';
 import { logger } from '../utils/log';
+import { CalendarDate, DateRange, TimeRange } from '../utils/time';
 import { migrations } from './migrations';
 
 export class DBService {
@@ -10,6 +10,7 @@ export class DBService {
   private isInitialized = false;
   private initializingPromise: Promise<void> | null = null;
   private readonly LATEST_VERSION = 1;
+  private readonly DATABASE_NAME = 'calendar.db';
 
   private constructor() {}
 
@@ -26,7 +27,7 @@ export class DBService {
 
     logger('database').info('Initializing DB');
     this.initializingPromise = (async () => {
-      this.db = await SQLite.openDatabaseAsync('calendar.db');
+      this.db = await SQLite.openDatabaseAsync(this.DATABASE_NAME);
       await this.runMigrations();
       logger('database').info('DB initialized');
 
@@ -280,16 +281,20 @@ export class DBService {
     await this.db.runAsync('DELETE FROM events WHERE id = ?', [id]);
   }
 
-  async cleanupOldEvents(daysToKeep: number = 30): Promise<void> {
+  async deleteDismissedEvents(): Promise<void> {
     await this.init();
     
-    const cutoffDate = new Date();
-    cutoffDate.setDate(cutoffDate.getDate() - daysToKeep);
-    const cutoffString = cutoffDate.toISOString().split('T')[0];
+    this.db.runAsync(
+      `DELETE FROM events WHERE date(date) < date() AND isDismissed = 1`,
+    );
+  }
+
+  async deleteEventsOlderThen(dateString: string): Promise<void> {
+    await this.init();
 
     this.db.runAsync(
       `DELETE FROM events WHERE date(date) < date(?)`,
-      [cutoffString],
+      [dateString],
     );
   }
 

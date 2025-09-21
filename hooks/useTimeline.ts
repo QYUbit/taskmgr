@@ -1,5 +1,5 @@
-import { CalendarDate } from '@/lib/data/time';
 import { TimelineItem } from '@/lib/types/ui';
+import { CalendarDate } from '@/lib/utils/time';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useEventsForDate } from './useEvents';
 import { useGhostEventsForDate } from './useGhostEvents';

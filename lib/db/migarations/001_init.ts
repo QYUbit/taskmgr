@@ -1,6 +1,6 @@
 import { USE_FRESH_DB, USE_SAMPLE_DB } from '@/dev.config';
-import { CalendarDate } from '@/lib/data/time';
 import { logger } from '@/lib/utils/log';
+import { CalendarDate } from '@/lib/utils/time';
 import { Migration } from '../../types/migrations';
 
 export const migration_001_init: Migration = {
@@ -57,7 +57,7 @@ export const migration_001_init: Migration = {
 
         if (USE_SAMPLE_DB) {
             logger("database").info("Setting up sample entries");
-            const today = CalendarDate.fromDateObject(new Date()).toString()
+            const today = CalendarDate.current().toString()
 
             await db.execAsync(`
                 INSERT INTO todos (id, title, description, repeatOn, isTemplate, dateStart, dateEnd, timeStart, timeEnd, createdAt, updatedAt)

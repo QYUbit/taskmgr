@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Alert, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
-import { CalendarDate, DateRange, TimeRange } from '../lib/data/time';
 import { dbService } from '../lib/db/service';
 import { Event, NewEvent, NewTodo, Todo } from '../lib/types/data';
+import { CalendarDate, DateRange, TimeRange } from '../lib/utils/time';
 
 export default function TestDBScreen() {
   const [todos, setTodos] = useState<Todo[]>([]);

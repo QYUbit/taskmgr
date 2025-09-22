@@ -1,5 +1,5 @@
-import { useSettings } from '@/hooks/useSettings';
-import { useTheme } from '@/hooks/useTheme';
+import { useConfig } from '@/context/Config';
+import { useTheme } from "@/context/Theme";
 import { CalendarDate } from '@/lib/utils/time';
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
@@ -13,9 +13,9 @@ export interface MonthlyCalendarProps {
 
 export default function MonthView({ year, month, onDayPress }: MonthlyCalendarProps) {
   const theme = useTheme();
-  const { settings } = useSettings();
+  const { config } = useConfig();
   
-  const baseDate = settings.weekStartsOn === 1 ? new Date(2024, 0, 1) : new Date(2023, 11, 31);
+  const baseDate = config.weekStartsOn === 1 ? new Date(2024, 0, 1) : new Date(2023, 11, 31);
   const weekDays = Array.from({ length: 7 }, (_, i) => {
     const date = new Date(baseDate);
     date.setDate(baseDate.getDate() + i);
@@ -36,7 +36,7 @@ export default function MonthView({ year, month, onDayPress }: MonthlyCalendarPr
   
   const calendarDays: (number | null)[] = [];
   
-  if (settings.weekStartsOn === 0) {
+  if (config.weekStartsOn === 0) {
     calendarDays.push(null);
   }
   

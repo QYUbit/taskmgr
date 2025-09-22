@@ -1,15 +1,14 @@
 import NumberInput from '@/components/settings/NumberInput';
 import Picker, { PickerRef } from '@/components/settings/Picker';
 import SettingRow from '@/components/settings/SettingsView';
-import Spinner from '@/components/ui/Spinner';
-import { useSettings } from '@/hooks/useSettings';
-import { useTheme } from '@/hooks/useTheme';
+import { useConfig } from '@/context/Config';
+import { useTheme } from "@/context/Theme";
 import { useFocusEffect } from 'expo-router';
 import React, { useCallback, useRef } from 'react';
 import { ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
 
 export default function SettingsRoute() {
-  const { settings, updateSetting, loading } = useSettings();
+  const { config: settings, update: updateSetting } = useConfig();
   const theme = useTheme();
 
   const weekStartPickerRef = useRef<PickerRef>(null);
@@ -21,10 +20,6 @@ export default function SettingsRoute() {
       }
     }, [])
   )
-
-  if (loading) {
-    return <Spinner theme={theme} />
-  }
 
   return (
     <View style={styles.container}>

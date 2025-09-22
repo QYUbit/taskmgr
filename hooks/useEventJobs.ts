@@ -1,25 +1,20 @@
+import { useConfig } from "@/context/Config";
 import { cleanupOldEvents, generateEventsForDate } from "@/lib/utils/eventJob";
 import { logger } from "@/lib/utils/log";
 import { CalendarDate } from "@/lib/utils/time";
-import { useCallback, useMemo, useState } from "react";
-import { useSettings } from "./useSettings";
+import { useCallback, useState } from "react";
 
 export const useEventJobs = () => {
-  const { settings, updateSetting, loading: settingsLoading } = useSettings();
+  const { config, update: updateConfig } = useConfig();
   const {
     lastEventJob,
     autoCleanupOldEvents,
     keepEventsDays,
     autoGenerateEvents,
-  } = settings ?? {}
+  } = config ?? {}
 
   const [jobLoading, setJobLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
-  const loading = useMemo(
-    () => settingsLoading || jobLoading,
-    [settingsLoading, jobLoading],
-  )
 
   const execute = useCallback(async () => {
     try {
@@ -28,8 +23,7 @@ export const useEventJobs = () => {
 
       const today = CalendarDate.current();
 
-      if (!settings || settingsLoading) return;
-      if (lastEventJob === today.toString()) return;
+      if (lastEventJob === today.toString()) return;;
       
       if (autoCleanupOldEvents) {
         await cleanupOldEvents(keepEventsDays);
@@ -39,7 +33,7 @@ export const useEventJobs = () => {
         await generateEventsForDate(today);
       }
 
-      updateSetting('lastEventJob', today.toString());
+      updateConfig('lastEventJob', today.toString());
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to execute event jobs';
       logger("event jobs").error(message);
@@ -55,7 +49,7 @@ export const useEventJobs = () => {
   ]);
 
   return { 
-    loading, 
+    loading: jobLoading, 
     error, 
     execute
   };

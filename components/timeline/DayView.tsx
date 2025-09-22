@@ -1,6 +1,6 @@
+import { useConfig } from "@/context/Config";
+import { useTheme } from "@/context/Theme";
 import { useEventOperations } from "@/hooks/useEvents";
-import { useSettings } from "@/hooks/useSettings";
-import { useTheme } from "@/hooks/useTheme";
 import { useTimeline } from "@/hooks/useTimeline";
 import { Event, NewEvent } from "@/lib/types/data";
 import { TimelineItem } from "@/lib/types/ui";
@@ -22,7 +22,7 @@ interface DayViewProps {
 
 export default function DayView({ date, onEventPress}: DayViewProps) {
   const theme = useTheme();
-  const { settings, loading: settingsLoading } = useSettings();
+  const { config } = useConfig();
   const { timelineItems, loading: timelineLoading, refetch } = useTimeline(date);
   const { createEvent, updateEvent, deleteEvent } = useEventOperations();
 
@@ -47,8 +47,8 @@ export default function DayView({ date, onEventPress}: DayViewProps) {
 
   useFocusEffect(
     useCallback(() => {
-      refetch();
       if (isToday) scrollViewRef.current?.scrollTo({ y: getCurrentTimePosition() });
+      refetch();
     }, [isToday])
   );
 
@@ -79,7 +79,7 @@ export default function DayView({ date, onEventPress}: DayViewProps) {
     await refetch();
   };
 
-  if (settingsLoading || timelineLoading) {
+  if (timelineLoading) {
     return <Spinner theme={theme} />
   }
   
@@ -123,7 +123,7 @@ export default function DayView({ date, onEventPress}: DayViewProps) {
               </View>
             ))}
             
-            {settings.showCurrentTime && isToday && (
+            {config.showCurrentTime && isToday && (
               <TimeIndicator
                 time={getCurrentTimePosition()}
                 theme={theme}

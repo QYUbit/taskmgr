@@ -2,7 +2,7 @@ import TodoCard from '@/components/todos/TodoCard';
 import TodoSheet from '@/components/todos/TodoSheet';
 import EpicButton from '@/components/ui/AddButton';
 import Spinner from '@/components/ui/Spinner';
-import { useTheme } from '@/hooks/useTheme';
+import { useTheme } from "@/context/Theme";
 import { useTodoOperations, useTodos } from '@/hooks/useTodos';
 import { NewTodo, Todo } from '@/lib/types/data';
 import React, { useState } from 'react';

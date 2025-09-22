@@ -208,7 +208,7 @@ export class DBService {
 
     try {
       const rows = await this.db.getAllAsync(
-      `SELECT * FROM events WHERE date = ? ORDER BY timeStart`,
+      `SELECT * FROM events WHERE date = ? AND isDismissed = 0 ORDER BY timeStart`,
       [dateString]
       );
       return rows.map((row: any) => this.mapRowToEvent(row));
@@ -217,8 +217,6 @@ export class DBService {
       console.error(err.message)
       throw err
     }
-    
-    
   }
 
   private mapRowToEvent(row: any): Event {

@@ -1,4 +1,4 @@
-import { useTheme } from '@/hooks/useTheme';
+import { useTheme } from "@/context/Theme";
 import { Ionicons } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
 
@@ -13,6 +13,7 @@ export default function TabLayout() {
         tabBarInactiveTintColor: theme.semiSoft,
         headerShown: false,
       }}
+      initialRouteName='day/[date]'
     >
       <Tabs.Screen
         name="day/[date]"

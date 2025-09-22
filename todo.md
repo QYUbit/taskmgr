@@ -1,7 +1,3 @@
-# Bugs
-
-- event sheet dateimepicker set bug
-
 # Next
 
 - implement settings
